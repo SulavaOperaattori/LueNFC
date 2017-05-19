@@ -31,7 +31,7 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
         this.roleField = roleField;
         byGetOrPost = flag;
     }
-
+    //test
     protected void onPreExecute(){
     }
 
