@@ -15,10 +15,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Created by c6sila00 on 19.5.2017.
@@ -58,10 +54,10 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
                 StringBuffer sb = new StringBuffer("");
                 String line="";
 
-                while ((line = in.readLine()) != null) {
+                /*while ((line = in.readLine()) != null) {
                     sb.append(line);
                     break;
-                }
+                }*/
 
                 in.close();
                 return sb.toString();
@@ -108,7 +104,8 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected void onPostExecute(String result){
+    protected void onPostExecute(String result) {
         this.statusField.setText("Login Successful");
         this.roleField.setText(result);
+    }
 }
