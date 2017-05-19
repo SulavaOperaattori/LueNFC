@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity{
     private TextView mTextView;
 
     private Button button1, button2, uploadButton, downloadButton;
-
+    // näkyykö
     private String[] splitString;
     final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
