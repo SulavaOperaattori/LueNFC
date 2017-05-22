@@ -1,6 +1,7 @@
 package opiskelu.luenfc;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity{
     final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
     ProgressDialog dialog = null;
-
+    DownloadManager mgr;
     String upLoadServerUri = null;
     File file;
     @Override
@@ -78,7 +79,16 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
+        mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        String file_url = "http://192.168.137.1/exceltest.xlsx";
 
+        Uri uri=Uri.parse(file_url);
+        Toast.makeText(MainActivity.this, "Downloading.",
+                Toast.LENGTH_SHORT).show();
+        mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                .setAllowedOverRoaming(false)
+                .setTitle(" Database File")
+                .setDescription("Please wait....test file downloading."));
     }
     public void uploadClicked(View view) {
 
