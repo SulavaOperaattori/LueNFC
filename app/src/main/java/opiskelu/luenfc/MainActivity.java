@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity{
                 Toast.LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
                 .setAllowedOverRoaming(false)
-                .setTitle(" Database File")
-                .setDescription("Please wait....test file downloading."));
+                .setTitle("PrinLab")
+                .setDescription("Excel-file"));
 
     }
 
