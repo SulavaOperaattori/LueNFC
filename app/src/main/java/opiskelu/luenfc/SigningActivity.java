@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
+/*
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -25,7 +26,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 
 public class SigningActivity extends AsyncTask<String, Void, String> {
-    private TextView statusField,roleField;
+    private TextView statusField, roleField;
     private Context context;
     private int byGetOrPost = 0;
 
@@ -36,16 +37,16 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
         byGetOrPost = flag;
     }
 
-    protected void onPreExecute(){
+    protected void onPreExecute() {
     }
 
     @Override
     protected String doInBackground(String... arg0) {
-        if(byGetOrPost == 0){ //means by Get Method
+        if (byGetOrPost == 0) { //means by Get Method
 
-            try{
-                String id= (String)arg0[0];
-                String link = "http://192.168.137.1/sqlandroidup.php?id_number="+id;
+            try {
+                String id = (String) arg0[0];
+                String link = "http://192.168.137.1/sqlandroidup.php?id_number=" + id;
 
                 URL url = new URL(link);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -54,27 +55,26 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
 
-
                 StringBuffer sb = new StringBuffer("");
-                String line="";
+                String line = "";
 
-                while ((line = in.readLine()) != null) {
+              /*  while ((line = in.readLine()) != null) {
                     sb.append(line);
                     break;
                 }
-
+              */
                 in.close();
                 return sb.toString();
-            } catch(Exception e){
+            } catch (Exception e) {
                 return new String("Exception: " + e.getMessage());
             }
-        } else{
-            try{
-                String username = (String)arg0[0];
-                String password = (String)arg0[1];
+        } else {
+            try {
+                String username = (String) arg0[0];
+                String password = (String) arg0[1];
 
-                String link="http://myphpmysqlweb.hostei.com/loginpost.php";
-                String data  = URLEncoder.encode("username", "UTF-8") + "=" +
+                String link = "http://myphpmysqlweb.hostei.com/loginpost.php";
+                String data = URLEncoder.encode("username", "UTF-8") + "=" +
                         URLEncoder.encode(username, "UTF-8");
                 data += "&" + URLEncoder.encode("password", "UTF-8") + "=" +
                         URLEncoder.encode(password, "UTF-8");
@@ -85,7 +85,7 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
                 conn.setDoOutput(true);
                 OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
 
-                wr.write( data );
+                wr.write(data);
                 wr.flush();
 
                 BufferedReader reader = new BufferedReader(new
@@ -95,22 +95,22 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
                 String line = null;
 
                 // Read Server Response
-                while((line = reader.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     sb.append(line);
                     break;
                 }
 
                 return sb.toString();
-            } catch(Exception e){
+            } catch (Exception e) {
                 return new String("Exception: " + e.getMessage());
             }
         }
     }
 
     @Override
-    protected void onPostExecute(String result){
+    protected void onPostExecute(String result) {
         this.statusField.setText("Login Successful");
         this.roleField.setText(result);
-}
+    }
 
-//testplss4334
+}
