@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity{
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
 
-
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
 
         if (mNfcAdapter == null) {
@@ -79,6 +78,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
+
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         String file_url = "http://192.168.137.1/exceltest.xlsx";
 
@@ -89,7 +89,9 @@ public class MainActivity extends AppCompatActivity{
                 .setAllowedOverRoaming(false)
                 .setTitle(" Database File")
                 .setDescription("Please wait....test file downloading."));
+
     }
+
     public void uploadClicked(View view) {
 
         dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
