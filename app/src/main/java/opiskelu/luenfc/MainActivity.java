@@ -1,6 +1,7 @@
 package opiskelu.luenfc;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -38,12 +39,12 @@ public class MainActivity extends AppCompatActivity{
     private TextView mTextView;
 
     private Button button1, button2, uploadButton, downloadButton;
-
+    // näkyykö
     private String[] splitString;
     final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
     ProgressDialog dialog = null;
-
+    DownloadManager mgr;
     String upLoadServerUri = null;
     File file;
     @Override
@@ -77,29 +78,18 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
-            String file_url = "http://192.168.137.1/exceltest.xlsx";
-            dialog = new ProgressDialog(this);
-            dialog.setMessage("Downloading Database. Please wait...");
-            dialog.setIndeterminate(false);
-            dialog.setMax(100);
-            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            dialog.setCancelable(false);
 
-            Uri uri=Uri.parse(file_url);
+        mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        String file_url = "http://192.168.137.1/exceltest.xlsx";
 
-            String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File ADirectory = new File(baseDir +"/test");
-            ADirectory.mkdirs();
+        Uri uri=Uri.parse(file_url);
+        Toast.makeText(MainActivity.this, "Downloading.",
+                Toast.LENGTH_SHORT).show();
+        mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                .setAllowedOverRoaming(false)
+                .setTitle(" Database File")
+                .setDescription("Please wait....test file downloading."));
 
-            lastDownload= mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
-                            .setAllowedOverRoaming(false)
-                            .setTitle(" Database File")
-                            .setDescription("Please wait....test Database downloading.")
-                            .setDestinationInExternalPublicDir("/test", "/testing"));
-
-            dialog.show();
-            //v.setEnabled(false);
-            // findViewById(R.id.query).setEnabled(true);
     }
 
     public void uploadClicked(View view) {
