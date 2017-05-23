@@ -39,70 +39,37 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... arg0) {
-        if (byGetOrPost == 0) { //means by Get Method
 
-            try {
-                String id = (String) arg0[0];
-                String link = "http://192.168.137.1/sqlandroidup.php?id_number=" + id;
+        try {
 
-                URL url = new URL(link);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setDoInput(true); // Allow Inputs
+            String link = "http://192.168.137.1/sqlandroidup.php";
+            String data = URLEncoder.encode("id", "UTF-8") + "=" +
+                    URLEncoder.encode(arg0[0], "UTF-8");
 
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            URL url = new URL(link);
+            URLConnection conn = url.openConnection();
 
+            conn.setDoOutput(true);
+            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
 
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
+            wr.write(data);
+            wr.flush();
 
+            BufferedReader reader = new BufferedReader(new
+                    InputStreamReader(conn.getInputStream()));
 
-              /*  while ((line = in.readLine()) != null) {
-                    sb.append(line);
-                    break;
-                }
-              */
+            StringBuilder sb = new StringBuilder();
+            String line = null;
 
-                in.close();
-                return sb.toString();
-            } catch (Exception e) {
-                return new String("Exception: " + e.getMessage());
+            // Read Server Response
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                break;
             }
-        } else {
-            try {
-                String username = (String) arg0[0];
-                String password = (String) arg0[1];
 
-                String link = "http://myphpmysqlweb.hostei.com/loginpost.php";
-                String data = URLEncoder.encode("username", "UTF-8") + "=" +
-                        URLEncoder.encode(username, "UTF-8");
-                data += "&" + URLEncoder.encode("password", "UTF-8") + "=" +
-                        URLEncoder.encode(password, "UTF-8");
-
-                URL url = new URL(link);
-                URLConnection conn = url.openConnection();
-
-                conn.setDoOutput(true);
-                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-
-                wr.write(data);
-                wr.flush();
-
-                BufferedReader reader = new BufferedReader(new
-                        InputStreamReader(conn.getInputStream()));
-
-                StringBuilder sb = new StringBuilder();
-                String line = null;
-
-                // Read Server Response
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
-                    break;
-                }
-
-                return sb.toString();
-            } catch (Exception e) {
-                return new String("Exception: " + e.getMessage());
-            }
+            return sb.toString();
+        } catch (Exception e) {
+            return new String("Exception: " + e.getMessage());
         }
     }
 
