@@ -88,7 +88,8 @@ public class MainActivity extends AppCompatActivity{
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
                 .setAllowedOverRoaming(false)
                 .setTitle("PrinLab")
-                .setDescription("Excel-file"));
+                .setDescription("Excel-file")
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
 
     }
 
