@@ -31,6 +31,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import static java.security.AccessController.getContext;
+
 public class MainActivity extends AppCompatActivity{
     public static final String MIME_TEXT_PLAIN = "text/plain";
     public static final String TAG = "NfcDemo";
@@ -77,19 +79,30 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    public void downloadClicked(View view) {
+    public void isFilePresent() {
+        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        if ( file.exists()) {
+            Toast.makeText(MainActivity.this, "File exists, deleting file...", Toast.LENGTH_SHORT).show();
+            file.delete();
+        }
+        else {
+            Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    public void downloadClicked(View view) {
+        //isFilePresent();
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         String file_url = "http://192.168.137.1/exceltest.xlsx";
-
         Uri uri=Uri.parse(file_url);
-        Toast.makeText(MainActivity.this, "Downloading.",
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "Downloading.", Toast.LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
                 .setAllowedOverRoaming(false)
                 .setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
+
+
 
     }
 
@@ -104,6 +117,7 @@ public class MainActivity extends AppCompatActivity{
             }
         }).start();
     }
+
 
     public void uploadFile() {
         HttpURLConnection conn = null;
