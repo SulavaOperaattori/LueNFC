@@ -1,11 +1,13 @@
 package opiskelu.luenfc;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -14,6 +16,8 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +38,7 @@ import java.util.Arrays;
 import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity{
+
     public static final String MIME_TEXT_PLAIN = "text/plain";
     public static final String TAG = "NfcDemo";
 
@@ -41,7 +46,6 @@ public class MainActivity extends AppCompatActivity{
     private TextView mTextView;
 
     private Button button1, button2, uploadButton, downloadButton;
-    // näkyykö
     private String[] splitString;
     final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
@@ -49,18 +53,17 @@ public class MainActivity extends AppCompatActivity{
     DownloadManager mgr;
     String upLoadServerUri = null;
     File file;
+    final int REQUEST_WRITE_STORAGE = 5;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         button1 = (Button) findViewById(R.id.button1);
         button2 = (Button) findViewById(R.id.button2);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
-
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
 
         if (mNfcAdapter == null) {
@@ -73,9 +76,27 @@ public class MainActivity extends AppCompatActivity{
         } else {
             mTextView.setText(R.string.enabled);
         }
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-
+                }
+                else
+                {
+                    Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
 
     }
 
@@ -91,7 +112,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
-        //isFilePresent();
+        isFilePresent();
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         String file_url = "http://192.168.137.1/exceltest.xlsx";
         Uri uri=Uri.parse(file_url);
@@ -101,9 +122,7 @@ public class MainActivity extends AppCompatActivity{
                 .setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
-
-
-
+        
     }
 
     public void uploadClicked(View view) {
