@@ -43,8 +43,7 @@ public class SigningActivity extends AsyncTask<String, Void, String> {
         try {
 
             String link = "http://192.168.137.1/sqlandroidup.php";
-            String data = URLEncoder.encode("id", "UTF-8") + "=" +
-                    URLEncoder.encode(arg0[0], "UTF-8");
+            String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
 
             URL url = new URL(link);
             URLConnection conn = url.openConnection();
