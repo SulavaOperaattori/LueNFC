@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity{
     String upLoadServerUri = null;
     File file;
     final int REQUEST_WRITE_STORAGE = 5;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity{
     public void downloadClicked(View view) {
         isFilePresent();
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        String file_url = "http://192.168.137.1/exceltest.xlsx";
+        String file_url = "http://192.168.137.1/test.xlsx";
         Uri uri=Uri.parse(file_url);
         Toast.makeText(MainActivity.this, "Downloading.", Toast.LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
