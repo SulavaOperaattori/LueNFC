@@ -24,34 +24,32 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
+
         <Button
-            android:id="@+id/button1"
-            android:visibility="invisible"
-            android:text="sivu1"
-            android:onClick="nappi_1_painettu"
+            android:id="@+id/more_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/button2"
-            android:text="sivu2"
-            android:visibility="invisible"
-            android:onClick="nappi_2_painettu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:enabled="false"
+            android:onClick="infoClicked"
+            android:text="More information"
+            android:visibility="visible" />
+
         <Button
             android:id="@+id/download"
-            android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:onClick="downloadClicked"
             android:text="download"
-            android:onClick="downloadClicked"/>
+            android:visibility="visible" />
+
         <Button
             android:id="@+id/upload"
-            android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:onClick="uploadClicked"
             android:text="upload"
-            android:onClick="uploadClicked"/>
+            android:visibility="visible" />
     </LinearLayout>
+
 </LinearLayout>

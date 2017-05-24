@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
 
-    private Button button1, button2, uploadButton, downloadButton;
+    private Button informationButton, uploadButton, downloadButton;
     private String[] splitString;
     final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
@@ -61,8 +61,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        button1 = (Button) findViewById(R.id.button1);
-        button2 = (Button) findViewById(R.id.button2);
+        informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
@@ -360,15 +359,11 @@ public class MainActivity extends AppCompatActivity{
      *
      */
 
-    public void nappi_1_painettu(View view) {
+    public void infoClicked(View view) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(splitString[0]));
         startActivity(browserIntent);
     }
 
-    public void nappi_2_painettu(View view) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(splitString[1]));
-        startActivity(browserIntent);
-    }
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
 
@@ -429,10 +424,7 @@ public class MainActivity extends AppCompatActivity{
             if (result != null) {
                 //mTextView.setText("Read content: " + result);
                 splitString = result.split("\\s+");
-                button1.setVisibility(View.VISIBLE);
-                button2.setVisibility(View.VISIBLE);
-                uploadButton.setVisibility(View.VISIBLE);
-                downloadButton.setVisibility(View.VISIBLE);
+                informationButton.setEnabled(true);
             }
         }
     }
