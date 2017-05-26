@@ -26,6 +26,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,9 +36,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -54,6 +57,8 @@ public class MainActivity extends AppCompatActivity{
     String upLoadServerUri = null;
     File file;
     final int REQUEST_WRITE_STORAGE = 5;
+
+    String infoLink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -360,7 +365,7 @@ public class MainActivity extends AppCompatActivity{
      */
 
     public void infoClicked(View view) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(splitString[0]));
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
         startActivity(browserIntent);
     }
 
@@ -424,8 +429,55 @@ public class MainActivity extends AppCompatActivity{
             if (result != null) {
                 //mTextView.setText("Read content: " + result);
                 splitString = result.split("\\s+");
+                new SigningActivity().execute(splitString[0]);
+
                 informationButton.setEnabled(true);
             }
+        }
+    }
+    private class SigningActivity extends AsyncTask<String, Void, Void> {
+
+
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Void doInBackground(String... arg0) {
+
+            try {
+                String link = "http://192.168.137.1/sqlandroidup.php";
+                String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
+
+                HttpHandler sh = new HttpHandler();
+
+                String response = sh.makeServiceCall(link, data);
+
+                JSONObject jObj = new JSONObject(response);
+                boolean error = jObj.getBoolean("error");
+
+                // Check for error node in json
+                if (!error) {
+
+                    JSONObject device = jObj.getJSONObject("device");
+                    String id = jObj.getString("id");
+                    String name = device.getString("name");
+                    String url = device.getString("url");
+                    infoLink = link + url;
+                } else {
+                    // Error in login. Get the error message
+                    String errorMsg = jObj.getString("error_msg");
+                    Toast.makeText(getApplicationContext(),
+                            errorMsg, Toast.LENGTH_LONG).show();
+                }
+            } catch (JSONException e) {
+                // JSON error
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            return null;
         }
     }
 }
