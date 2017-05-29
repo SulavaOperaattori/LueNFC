@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -10,21 +11,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     tools:context="opiskelu.luenfc.MainActivity"
-    android:weightSum="1">
-
+    android:weightSum="1"
+    >
 
     <TextView
         android:id="@+id/textView_explanation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="#################" />
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
-        <Button
+      <!--  <Button
             android:id="@+id/button1"
             android:visibility="invisible"
             android:text="sivu1"
@@ -38,20 +41,27 @@
             android:visibility="invisible"
             android:onClick="nappi_2_painettu"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"/> -->
         <Button
             android:id="@+id/download"
-            android:visibility="invisible"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="360dp"
+            android:layout_height="128dp"
+            android:onClick="downloadClicked"
             android:text="download"
-            android:onClick="downloadClicked"/>
+            android:visibility="visible" />
+
         <Button
             android:id="@+id/upload"
-            android:visibility="invisible"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="457dp"
+            android:layout_height="143dp"
+            android:onClick="uploadClicked"
             android:text="upload"
-            android:onClick="uploadClicked"/>
+            android:visibility="visible" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srcCompat="@mipmap/Logo_of_Oulu_University_of_Applied_Sciences" />
 </LinearLayout>
