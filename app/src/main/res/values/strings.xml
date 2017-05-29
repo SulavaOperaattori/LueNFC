@@ -5,4 +5,5 @@
     <string name="download">download</string>
     <string name="upload">upload</string>
     <string name="info">more information</string>
+    <string name="manual">open manual</string>
 </resources>
