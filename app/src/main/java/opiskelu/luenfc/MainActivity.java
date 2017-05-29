@@ -48,9 +48,9 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
 
-    private Button informationButton, uploadButton, downloadButton;
+    private Button informationButton;//, uploadButton, downloadButton;
     private String[] splitString;
-    final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
+    final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
     ProgressDialog dialog = null;
     DownloadManager mgr;
@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity{
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         informationButton = (Button) findViewById(R.id.more_info);
-        uploadButton = (Button) findViewById(R.id.upload);
-        downloadButton = (Button) findViewById(R.id.download);
+        //uploadButton = (Button) findViewById(R.id.upload);
+        //downloadButton = (Button) findViewById(R.id.download);
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
 
         if (mNfcAdapter == null) {
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity{
         switch (requestCode)
         {
             case REQUEST_WRITE_STORAGE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
                 }
                 else
@@ -151,9 +151,9 @@ public class MainActivity extends AppCompatActivity{
         String boundary = "*****";
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
-        int maxBufferSize = 1 * 1024 * 1024;
+        int maxBufferSize = 1024 * 1024;
 
-        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),"test.xlsx");
+        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
 
         try {
 
@@ -429,6 +429,7 @@ public class MainActivity extends AppCompatActivity{
             if (result != null) {
                 //mTextView.setText("Read content: " + result);
                 splitString = result.split("\\s+");
+                Log.i("NFC", "sql haku");
                 new SigningActivity().execute(splitString[0]);
 
                 informationButton.setEnabled(true);
@@ -446,13 +447,12 @@ public class MainActivity extends AppCompatActivity{
         protected Void doInBackground(String... arg0) {
 
             try {
-                String link = "http://192.168.137.1/sqlandroidup.php";
+                String sqlLink = "http://193.167.148.46/sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
 
                 HttpHandler sh = new HttpHandler();
 
-                String response = sh.makeServiceCall(link, data);
-
+                String response = sh.makeServiceCall(sqlLink, data);
                 JSONObject jObj = new JSONObject(response);
                 boolean error = jObj.getBoolean("error");
 
@@ -460,8 +460,8 @@ public class MainActivity extends AppCompatActivity{
                 if (!error) {
 
                     JSONObject device = jObj.getJSONObject("device");
-                    String id = jObj.getString("id");
-                    String name = device.getString("name");
+                    //String id = jObj.getString("id");
+                    //String name = device.getString("name");
                     String url = device.getString("url");
                     infoLink = link + url;
                 } else {
