@@ -26,6 +26,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,9 +36,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -45,20 +48,29 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
 
-    private Button button1, button2, uploadButton, downloadButton;
+    private Button informationButton;//, uploadButton, downloadButton;
     private String[] splitString;
-    final String link = "www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
+    final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
     ProgressDialog dialog = null;
     DownloadManager mgr;
     String upLoadServerUri = null;
     File file;
     final int REQUEST_WRITE_STORAGE = 5;
+
+    String infoLink;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mTextView = (TextView) findViewById(R.id.textView_explanation);
+
+        informationButton = (Button) findViewById(R.id.more_info);
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        //uploadButton = (Button) findViewById(R.id.upload);
+        //downloadButton = (Button) findViewById(R.id.download);
+
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -91,7 +103,7 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
                 } else {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
@@ -113,7 +125,7 @@ public class MainActivity extends AppCompatActivity{
     public void downloadClicked(View view) {
         isFilePresent();
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        String file_url = "http://192.168.137.1/exceltest.xlsx";
+        String file_url = "http://192.168.137.1/test.xlsx";
         Uri uri=Uri.parse(file_url);
         Toast.makeText(MainActivity.this, "Downloading.", Toast.LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
@@ -143,7 +155,9 @@ public class MainActivity extends AppCompatActivity{
         String boundary = "*****";
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
-        int maxBufferSize = 1 * 1024 * 1024;
+
+        int maxBufferSize = 1024 * 1024;
+
         file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         try {
             // open a URL connection to the Servlet
@@ -306,14 +320,13 @@ public class MainActivity extends AppCompatActivity{
      * @author Ralf Wondratschek
      *
      */
-    public void nappi_1_painettu(View view) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(splitString[0]));
+
+    public void infoClicked(View view) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
         startActivity(browserIntent);
     }
-    public void nappi_2_painettu(View view) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(splitString[1]));
-        startActivity(browserIntent);
-    }
+
+
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
         @Override
         protected String doInBackground(Tag... params) {
@@ -363,11 +376,57 @@ public class MainActivity extends AppCompatActivity{
             if (result != null) {
                 //mTextView.setText("Read content: " + result);
                 splitString = result.split("\\s+");
-                //button1.setVisibility(View.VISIBLE);
-                //button2.setVisibility(View.VISIBLE);
-                uploadButton.setVisibility(View.VISIBLE);
-                downloadButton.setVisibility(View.VISIBLE);
+
+                Log.i("NFC", "sql haku");
+                new SigningActivity().execute(splitString[0]);
+
+                informationButton.setEnabled(true);
             }
+        }
+    }
+    private class SigningActivity extends AsyncTask<String, Void, Void> {
+
+
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Void doInBackground(String... arg0) {
+
+            try {
+                String sqlLink = "http://193.167.148.46/sqlandroidup.php";
+                String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
+
+                HttpHandler sh = new HttpHandler();
+
+                String response = sh.makeServiceCall(sqlLink, data);
+                JSONObject jObj = new JSONObject(response);
+                boolean error = jObj.getBoolean("error");
+
+                // Check for error node in json
+                if (!error) {
+
+                    JSONObject device = jObj.getJSONObject("device");
+                    //String id = jObj.getString("id");
+                    //String name = device.getString("name");
+                    String url = device.getString("url");
+                    infoLink = link + url;
+                } else {
+                    // Error in login. Get the error message
+                    String errorMsg = jObj.getString("error_msg");
+                    Toast.makeText(getApplicationContext(),
+                            errorMsg, Toast.LENGTH_LONG).show();
+                }
+            } catch (JSONException e) {
+                // JSON error
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+            }
+            return null;
         }
     }
 }

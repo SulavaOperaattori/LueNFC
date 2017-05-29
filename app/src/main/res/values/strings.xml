@@ -2,4 +2,7 @@
     <string name="app_name">PrinLab Automation Software</string>
     <string name="disabled">NFC is disabled, please enable NFC</string>
     <string name="enabled">NFC is enabled</string>
+    <string name="download">download</string>
+    <string name="upload">upload</string>
+    <string name="info">more information</string>
 </resources>

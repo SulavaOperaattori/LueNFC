@@ -10,53 +10,51 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+
     tools:context="opiskelu.luenfc.MainActivity"
     android:weightSum="1"
     >
-
+  
     <TextView
         android:id="@+id/textView_explanation"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="#################" />
 
-
+        android:gravity="center_horizontal"
+        android:text="Hello World!" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
-      <!--  <Button
-            android:id="@+id/button1"
-            android:visibility="invisible"
-            android:text="sivu1"
-            android:onClick="nappi_1_painettu"
-            android:layout_alignParentRight="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+
+ 
         <Button
-            android:id="@+id/button2"
-            android:text="sivu2"
-            android:visibility="invisible"
-            android:onClick="nappi_2_painettu"
+            android:id="@+id/more_info"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/> -->
-        <Button
-            android:id="@+id/download"
-            android:layout_width="360dp"
-            android:layout_height="128dp"
-            android:onClick="downloadClicked"
-            android:text="download"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:onClick="infoClicked"
+            android:text="@string/info"
             android:visibility="visible" />
 
         <Button
-            android:id="@+id/upload"
-            android:layout_width="457dp"
-            android:layout_height="143dp"
-            android:onClick="uploadClicked"
-            android:text="upload"
+            android:id="@+id/download"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="downloadClicked"
+            android:text="@string/download"
+
             android:visibility="visible" />
+        <Button
+            android:id="@+id/upload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="uploadClicked"
+            android:text="@string/upload"
+            android:visibility="visible" />
+
     </LinearLayout>
 
     <ImageView
@@ -64,4 +62,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:srcCompat="@mipmap/Logo_of_Oulu_University_of_Applied_Sciences" />
+
+           
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>
