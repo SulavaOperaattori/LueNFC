@@ -65,22 +65,33 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mTextView = (TextView) findViewById(R.id.textView_explanation);
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+
         informationButton = (Button) findViewById(R.id.more_info);
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         //uploadButton = (Button) findViewById(R.id.upload);
         //downloadButton = (Button) findViewById(R.id.download);
+
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
             finish();
-            return;
         }
+
         if (!mNfcAdapter.isEnabled()) {
             mTextView.setText(R.string.disabled);
-        } else {
-            mTextView.setText(R.string.enabled);
         }
+
+        if (mNfcAdapter.isEnabled()) {
+
+            mTextView.setText(R.string.enabled);
+            //button1 = (Button) findViewById(R.id.button1);
+            //button2 = (Button) findViewById(R.id.button2);
+            uploadButton = (Button) findViewById(R.id.upload);
+            downloadButton = (Button) findViewById(R.id.download);
+        }
+
         boolean hasPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
         if (!hasPermission) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
@@ -90,21 +101,16 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode)
-        {
+        switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                }
-                else
-                {
+                } else {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
                 }
             }
         }
-
     }
-
     public void isFilePresent() {
         file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         if ( file.exists()) {
@@ -127,7 +133,7 @@ public class MainActivity extends AppCompatActivity{
                 .setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
-        
+
     }
 
     public void uploadClicked(View view) {
@@ -135,9 +141,7 @@ public class MainActivity extends AppCompatActivity{
         dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
         new Thread(new Runnable() {
             public void run() {
-
                 uploadFile();
-
             }
         }).start();
     }
@@ -151,16 +155,14 @@ public class MainActivity extends AppCompatActivity{
         String boundary = "*****";
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
+
         int maxBufferSize = 1024 * 1024;
 
         file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
-
         try {
-
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);
             URL url = new URL(upLoadServerUri);
-
             // Open a HTTP  connection to  the URL
             conn = (HttpURLConnection) url.openConnection();
             conn.setDoInput(true); // Allow Inputs
@@ -171,83 +173,57 @@ public class MainActivity extends AppCompatActivity{
             conn.setRequestProperty("ENCTYPE", "multipart/form-data");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             conn.setRequestProperty("uploaded_file", file.getName());
-
             dos = new DataOutputStream(conn.getOutputStream());
-
             dos.writeBytes(twoHyphens + boundary + lineEnd);
             dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
                             + file.getName() + "\"" + lineEnd);
-
             dos.writeBytes(lineEnd);
-
             // create a buffer of  maximum size
             bytesAvailable = fileInputStream.available();
-
             bufferSize = Math.min(bytesAvailable, maxBufferSize);
             buffer = new byte[bufferSize];
-
             // read file and write it into form...
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
             while (bytesRead > 0) {
-
                 dos.write(buffer, 0, bufferSize);
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
             }
-
             // send multipart form data necesssary after file data...
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
             // Responses from the server (code and message)
             serverResponseCode = conn.getResponseCode();
             String serverResponseMessage = conn.getResponseMessage();
-
-            Log.i("uploadFile", "HTTP Response is : "
-                    + serverResponseMessage + ": " + serverResponseCode);
-
+            Log.i("uploadFile", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
             if(serverResponseCode == 200){
-
                 runOnUiThread(new Runnable() {
                     public void run() {
-
-                        String msg = "File Upload Completed.\n\n See uploaded file here : \n\n"
-                                +" http://www.androidexample.com/media/uploads/"
-                                +file.getName();
-
+                        String msg = "File Upload Completed.\n\n See uploaded file here : \n\n" +" http://www.androidexample.com/media/uploads/" +file.getName();
                         mTextView.setText(msg);
                         Toast.makeText(MainActivity.this, "File Upload Complete.",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
             }
-
             //close the streams //
             fileInputStream.close();
             dos.flush();
             dos.close();
-
         } catch (MalformedURLException ex) {
-
             dialog.dismiss();
             ex.printStackTrace();
-
             runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(MainActivity.this, "MalformedURLException",
                             Toast.LENGTH_SHORT).show();
                 }
             });
-
             Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
         } catch (Exception e) {
-
             dialog.dismiss();
             e.printStackTrace();
-
             runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(MainActivity.this, "Got Exception : see logcat ",
@@ -257,20 +233,16 @@ public class MainActivity extends AppCompatActivity{
         }
         dialog.dismiss();
         //return serverResponseCode;
-
     }
-
     @Override
     protected void onResume() {
         super.onResume();
-
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
          */
         setupForegroundDispatch(this, mNfcAdapter);
     }
-
     @Override
     protected void onPause() {
         /**
@@ -280,7 +252,6 @@ public class MainActivity extends AppCompatActivity{
 
         super.onPause();
     }
-
     @Override
     protected void onNewIntent(Intent intent) {
         /**
@@ -292,28 +263,21 @@ public class MainActivity extends AppCompatActivity{
          */
         handleIntent(intent);
     }
-
-
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-
             String type = intent.getType();
             if (MIME_TEXT_PLAIN.equals(type)) {
-
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 new NdefReaderTask().execute(tag);
-
             } else {
                 Log.d(TAG, "Wrong mime type: " + type);
             }
         } else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-
             // In case we would still use the Tech Discovered Intent
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             String[] techList = tag.getTechList();
             String searchedTech = Ndef.class.getName();
-
             for (String tech : techList) {
                 if (searchedTech.equals(tech)) {
                     new NdefReaderTask().execute(tag);
@@ -322,7 +286,6 @@ public class MainActivity extends AppCompatActivity{
             }
         }
     }
-
     /**
      * @param activity The corresponding {@link Activity} requesting the foreground dispatch.
      * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
@@ -330,12 +293,9 @@ public class MainActivity extends AppCompatActivity{
     private void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
         final PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, 0);
-
         IntentFilter[] filters = new IntentFilter[1];
         String[][] techList = new String[][]{};
-
         // Notice that this is the same filter as in our manifest.
         filters[0] = new IntentFilter();
         filters[0].addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
@@ -345,11 +305,8 @@ public class MainActivity extends AppCompatActivity{
         } catch (IntentFilter.MalformedMimeTypeException e) {
             throw new RuntimeException("Check your mime type.");
         }
-
         adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
-
     }
-
     /**
      * @param activity The corresponding {@link Activity} requesting to stop the foreground dispatch.
      * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
@@ -371,33 +328,29 @@ public class MainActivity extends AppCompatActivity{
 
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
-
         @Override
         protected String doInBackground(Tag... params) {
             Tag tag = params[0];
-
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
                 // NDEF is not supported by this Tag.
                 return null;
             }
-
             NdefMessage ndefMessage = ndef.getCachedNdefMessage();
 
             NdefRecord[] records = ndefMessage.getRecords();
             for (NdefRecord ndefRecord : records) {
-                if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT)) {
+                if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT  )) {
                     try {
                         return readText(ndefRecord);
-                    } catch (UnsupportedEncodingException e) {
+                    }
+                    catch (UnsupportedEncodingException e) {
                         Log.e(TAG, "Unsupported Encoding", e);
                     }
                 }
             }
-
             return null;
         }
-
         private String readText(NdefRecord record) throws UnsupportedEncodingException {
         /*
          * See NFC forum specification for "Text Record Type Definition" at 3.2.1
@@ -408,27 +361,22 @@ public class MainActivity extends AppCompatActivity{
          * bit_6 reserved for future use, must be 0
          * bit_5..0 length of IANA language code
          */
-
             byte[] payload = record.getPayload();
-
             // Get the Text Encoding
             String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
-
             // Get the Language Code
             int languageCodeLength = payload[0] & 0063;
-
             // String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
             // e.g. "en"
-
             // Get the Text
             return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
         }
-
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
                 //mTextView.setText("Read content: " + result);
                 splitString = result.split("\\s+");
+
                 Log.i("NFC", "sql haku");
                 new SigningActivity().execute(splitString[0]);
 
@@ -476,6 +424,7 @@ public class MainActivity extends AppCompatActivity{
                 Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
             } catch (Exception e) {
                 Toast.makeText(getApplicationContext(), "Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
             }
             return null;
         }
