@@ -88,8 +88,8 @@ public class MainActivity extends AppCompatActivity{
             mTextView.setText(R.string.enabled);
             //button1 = (Button) findViewById(R.id.button1);
             //button2 = (Button) findViewById(R.id.button2);
-            uploadButton = (Button) findViewById(R.id.upload);
-            downloadButton = (Button) findViewById(R.id.download);
+            //uploadButton = (Button) findViewById(R.id.upload);
+            //downloadButton = (Button) findViewById(R.id.download);
         }
 
         boolean hasPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
