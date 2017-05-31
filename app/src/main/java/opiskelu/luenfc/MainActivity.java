@@ -47,6 +47,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.Vector;
+
+import static android.widget.Toast.LENGTH_SHORT;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -58,30 +61,31 @@ public class MainActivity extends AppCompatActivity{
     private TextView mTextView;
     private TextView WiFiStateTextView;
 
-    private Button informationButton;//, uploadButton, downloadButton;
-    private Button uploadButton;
-    private Button downloadButton;
-    private String[] splitString;
-    final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
-    int serverResponseCode = 0;
-    ProgressDialog dialog = null;
-    DownloadManager mgr;
-    String upLoadServerUri = null;
-    File file;
-    final int REQUEST_WRITE_STORAGE = 5;
 
+ 
+    private String[] splitString;
+
+    private Button informationButton, uploadButton, downloadButton;
+    private Vector<String> results;
+
+
+    final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     String infoLink;
+
+    final String serverURL = "http://193.167.148.46/";
+    String upLoadServerUri = null;
+
+    int serverResponseCode = 0;
+    //ProgressDialog dialog = null;
+    DownloadManager mgr;
+    //File file;
+    final int REQUEST_WRITE_STORAGE = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
         WiFiStateTextView = (TextView) findViewById(R.id.textView_WiFiState);
-        informationButton = (Button) findViewById(R.id.more_info);
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        uploadButton = (Button) findViewById(R.id.upload);
-        downloadButton = (Button) findViewById(R.id.download);
         Button WiFi = (Button)findViewById(R.id.WiFi);
         WiFi.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,7 +94,16 @@ public class MainActivity extends AppCompatActivity{
                 checkWifiOnAndConnected();
             }
         });
-        upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
+      
+        results = new Vector<>();
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
+        informationButton = (Button) findViewById(R.id.more_info);
+        uploadButton = (Button) findViewById(R.id.upload);
+        downloadButton = (Button) findViewById(R.id.download);
+
+        upLoadServerUri = serverURL + "upload.php";
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
@@ -140,7 +153,7 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
 
                 } else {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
@@ -149,22 +162,22 @@ public class MainActivity extends AppCompatActivity{
         }
     }
     public void isFilePresent() {
-        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         if ( file.exists()) {
-            Toast.makeText(MainActivity.this, "File exists, deleting file...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
             file.delete();
         }
         else {
-            Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
         }
     }
 
     public void downloadClicked(View view) {
         isFilePresent();
         mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        String file_url = "http://192.168.137.1/test.xlsx";
+        String file_url = serverURL + "files/test.xlsx";
         Uri uri=Uri.parse(file_url);
-        Toast.makeText(MainActivity.this, "Downloading.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "Downloading.", LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
                 .setAllowedOverRoaming(false)
                 .setTitle("PrinLab")
@@ -175,7 +188,7 @@ public class MainActivity extends AppCompatActivity{
 
     public void uploadClicked(View view) {
 
-        dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
+        //dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
         new Thread(new Runnable() {
             public void run() {
                 uploadFile();
@@ -185,8 +198,8 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void uploadFile() {
-        HttpURLConnection conn = null;
-        DataOutputStream dos = null;
+        HttpURLConnection conn;
+        DataOutputStream dos;
         String lineEnd = "\r\n";
         String twoHyphens = "--";
         String boundary = "*****";
@@ -195,7 +208,7 @@ public class MainActivity extends AppCompatActivity{
 
         int maxBufferSize = 1024 * 1024;
 
-        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         try {
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);
@@ -237,10 +250,8 @@ public class MainActivity extends AppCompatActivity{
             if(serverResponseCode == 200){
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        String msg = "File Upload Completed.\n\n See uploaded file here : \n\n" +" http://www.androidexample.com/media/uploads/" +file.getName();
-                        mTextView.setText(msg);
                         Toast.makeText(MainActivity.this, "File Upload Complete.",
-                                Toast.LENGTH_SHORT).show();
+                                LENGTH_SHORT).show();
                     }
                 });
             }
@@ -249,43 +260,42 @@ public class MainActivity extends AppCompatActivity{
             dos.flush();
             dos.close();
         } catch (MalformedURLException ex) {
-            dialog.dismiss();
+            //dialog.dismiss();
             ex.printStackTrace();
             runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(MainActivity.this, "MalformedURLException",
-                            Toast.LENGTH_SHORT).show();
+                            LENGTH_SHORT).show();
                 }
             });
             Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
         } catch (Exception e) {
-            dialog.dismiss();
+            //dialog.dismiss();
             e.printStackTrace();
             runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(MainActivity.this, "Got Exception : see logcat ",
-                            Toast.LENGTH_SHORT).show();
+                            LENGTH_SHORT).show();
                 }
             });
         }
-        dialog.dismiss();
+        //dialog.dismiss();
         //return serverResponseCode;
     }
     @Override
     protected void onResume() {
         super.onResume();
+
         checkWifiOnAndConnected();
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
          */
+
         setupForegroundDispatch(this, mNfcAdapter);
     }
     @Override
     protected void onPause() {
-        /**
-         * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
-         */
         stopForegroundDispatch(this, mNfcAdapter);
         checkWifiOnAndConnected();
 
@@ -293,6 +303,7 @@ public class MainActivity extends AppCompatActivity{
     }
     @Override
     protected void onNewIntent(Intent intent) {
+
         /**
          * This method gets called, when a new Intent gets associated with the current activity instance.
          * Instead of creating a new activity, onNewIntent will be called. For more information have a look
@@ -301,6 +312,7 @@ public class MainActivity extends AppCompatActivity{
          * In our case this method gets called, when the user attaches a Tag to the device.
          */
         checkWifiOnAndConnected();
+
         handleIntent(intent);
     }
     private void handleIntent(Intent intent) {
@@ -354,12 +366,7 @@ public class MainActivity extends AppCompatActivity{
     public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         adapter.disableForegroundDispatch(activity);
     }
-    /**
-     * Background task for reading the data. Do not block the UI thread while reading.
-     *
-     * @author Ralf Wondratschek
-     *
-     */
+
 
     public void infoClicked(View view) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
@@ -367,29 +374,31 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
+    private class NdefReaderTask extends AsyncTask<Tag, Void, Boolean> {
         @Override
-        protected String doInBackground(Tag... params) {
+        protected Boolean doInBackground(Tag... params) {
+            boolean isOk = false;
+            results.clear();
             Tag tag = params[0];
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
                 // NDEF is not supported by this Tag.
-                return null;
+                return false;
             }
             NdefMessage ndefMessage = ndef.getCachedNdefMessage();
-
             NdefRecord[] records = ndefMessage.getRecords();
             for (NdefRecord ndefRecord : records) {
                 if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT  )) {
                     try {
-                        return readText(ndefRecord);
+                        results.add(readText(ndefRecord));
+                        isOk = true;
                     }
                     catch (UnsupportedEncodingException e) {
                         Log.e(TAG, "Unsupported Encoding", e);
                     }
                 }
             }
-            return null;
+            return isOk;
         }
         private String readText(NdefRecord record) throws UnsupportedEncodingException {
         /*
@@ -405,22 +414,29 @@ public class MainActivity extends AppCompatActivity{
             // Get the Text Encoding
             String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
             // Get the Language Code
-            int languageCodeLength = payload[0] & 0063;
+            int languageCodeLength = payload[0] & 51;
             // String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
             // e.g. "en"
             // Get the Text
             return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
         }
         @Override
-        protected void onPostExecute(String result) {
-            if (result != null) {
+        protected void onPostExecute(Boolean result) {
+            if (result) {
                 //mTextView.setText("Read content: " + result);
-                splitString = result.split("\\s+");
+                //splitString = result.split("\\s+");
+
+                infoLink = link + results.elementAt(1);
+              
 
                 Log.i("NFC", "sql haku");
-                new SigningActivity().execute(splitString[0]);
+                new SigningActivity().execute(results.elementAt(0));
+
 
                 informationButton.setEnabled(true);
+
+
+
                 uploadButton.setEnabled(true);
                 downloadButton.setEnabled(true);
             }
@@ -437,7 +453,7 @@ public class MainActivity extends AppCompatActivity{
         protected Void doInBackground(String... arg0) {
 
             try {
-                String sqlLink = "http://193.167.148.46/sqlandroidup.php";
+                String sqlLink = serverURL + "sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
 
                 HttpHandler sh = new HttpHandler();
@@ -449,11 +465,11 @@ public class MainActivity extends AppCompatActivity{
                 // Check for error node in json
                 if (!error) {
 
-                    JSONObject device = jObj.getJSONObject("device");
+                    //JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
-                    String url = device.getString("url");
-                    infoLink = link + url;
+                    //String url = device.getString("url");
+                    //infoLink = link + url;
                 } else {
                     // Error in login. Get the error message
                     String errorMsg = jObj.getString("error_msg");
