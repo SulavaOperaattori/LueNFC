@@ -1,9 +1,13 @@
 <resources>
-    <string name="app_name">PrinLab Automation Software</string>
-    <string name="disabled">NFC is disabled, please enable NFC</string>
+    <string name="app_name">PrinLab Automation</string>
+    <string name="disabled">NFC is disabled</string>
     <string name="enabled">NFC is enabled</string>
     <string name="download">download</string>
     <string name="upload">upload</string>
     <string name="info">more information</string>
     <string name="manual">open manual</string>
+    <string name="WiFiEnabled">WiFi is enabled</string>
+    <string name="WiFiDisabled">WiFi is disabled</string>
+    <string name="WiFiEnabledConnected">WiFi is enabled and connected to network</string>
+    <string name="WiFiEnabledDisconnected">WiFi is enabled but not connected to network</string>
 </resources>

@@ -5,10 +5,17 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -16,8 +23,10 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,8 +56,11 @@ public class MainActivity extends AppCompatActivity{
 
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
+    private TextView WiFiStateTextView;
 
     private Button informationButton;//, uploadButton, downloadButton;
+    private Button uploadButton;
+    private Button downloadButton;
     private String[] splitString;
     final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     int serverResponseCode = 0;
@@ -65,12 +77,19 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mTextView = (TextView) findViewById(R.id.textView_explanation);
-
+        WiFiStateTextView = (TextView) findViewById(R.id.textView_WiFiState);
         informationButton = (Button) findViewById(R.id.more_info);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        //uploadButton = (Button) findViewById(R.id.upload);
-        //downloadButton = (Button) findViewById(R.id.download);
-
+        uploadButton = (Button) findViewById(R.id.upload);
+        downloadButton = (Button) findViewById(R.id.download);
+        Button WiFi = (Button)findViewById(R.id.WiFi);
+        WiFi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
+                checkWifiOnAndConnected();
+            }
+        });
         upLoadServerUri = "http://192.168.137.1/uploadToServer.php";
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -86,15 +105,33 @@ public class MainActivity extends AppCompatActivity{
         if (mNfcAdapter.isEnabled()) {
 
             mTextView.setText(R.string.enabled);
-            //button1 = (Button) findViewById(R.id.button1);
-            //button2 = (Button) findViewById(R.id.button2);
-            //uploadButton = (Button) findViewById(R.id.upload);
-            //downloadButton = (Button) findViewById(R.id.download);
         }
 
         boolean hasPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
         if (!hasPermission) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
+        }
+        checkWifiOnAndConnected();
+
+}
+    private boolean checkWifiOnAndConnected() {
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+            WiFiStateTextView.setText(R.string.WiFiEnabled);
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+
+            if( wifiInfo.getNetworkId() == -1 ){
+                WiFiStateTextView.setText(R.string.WiFiEnabledDisconnected);
+                return false; // Not connected to an access point
+            }
+            String ssid = "You are connected to: " + wifiInfo.getSSID();
+            WiFiStateTextView.setText(ssid);
+            return true; // Connected to an access point
+        }
+        else {
+            WiFiStateTextView.setText(R.string.WiFiDisabled);
+            return false; // Wi-Fi adapter is OFF
         }
     }
 
@@ -237,6 +274,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        checkWifiOnAndConnected();
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
@@ -249,6 +287,7 @@ public class MainActivity extends AppCompatActivity{
          * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
          */
         stopForegroundDispatch(this, mNfcAdapter);
+        checkWifiOnAndConnected();
 
         super.onPause();
     }
@@ -261,6 +300,7 @@ public class MainActivity extends AppCompatActivity{
          *
          * In our case this method gets called, when the user attaches a Tag to the device.
          */
+        checkWifiOnAndConnected();
         handleIntent(intent);
     }
     private void handleIntent(Intent intent) {
@@ -381,6 +421,8 @@ public class MainActivity extends AppCompatActivity{
                 new SigningActivity().execute(splitString[0]);
 
                 informationButton.setEnabled(true);
+                uploadButton.setEnabled(true);
+                downloadButton.setEnabled(true);
             }
         }
     }
