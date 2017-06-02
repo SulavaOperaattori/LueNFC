@@ -19,18 +19,32 @@
         android:id="@+id/textView_explanation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:gravity="center_horizontal"
-        android:text="Hello World!" />
+        android:text="@string/nfcstatus"
+        android:layout_alignParentTop="true" />
+    <TextView
+        android:id="@+id/textView_WiFiState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textView_explanation"
+        android:gravity="center_horizontal"
+        android:text="@string/wifistatus" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:layout_below="@id/textView_explanation"
-        android:orientation="vertical">
+        android:layout_below="@id/textView_WiFiState"
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
 
- 
+
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/open_wifi_settings"
+            android:id="@+id/WiFi"/>
         <Button
             android:id="@+id/more_info"
             android:layout_width="match_parent"
@@ -53,6 +67,7 @@
             android:enabled="false"
             android:onClick="uploadClicked"
             android:text="@string/upload"/>
+
         <Button
             android:id="@+id/manual"
             android:layout_width="match_parent"
@@ -63,16 +78,13 @@
 
     </LinearLayout>
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:srcCompat="@mipmap/oamk"/>
+
 
 
 </RelativeLayout>
