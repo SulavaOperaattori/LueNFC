@@ -4,15 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -23,10 +18,8 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -80,7 +73,6 @@ public class MainActivity extends AppCompatActivity{
     DownloadManager mgr;
     //File file;
     final int REQUEST_WRITE_STORAGE = 5;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +89,6 @@ public class MainActivity extends AppCompatActivity{
       
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
@@ -129,18 +120,22 @@ public class MainActivity extends AppCompatActivity{
 }
     private boolean checkWifiOnAndConnected() {
         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
-            WiFiStateTextView.setText(R.string.WiFiEnabled);
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
             if( wifiInfo.getNetworkId() == -1 ){
                 WiFiStateTextView.setText(R.string.WiFiEnabledDisconnected);
                 return false; // Not connected to an access point
             }
-            String ssid = "You are connected to: " + wifiInfo.getSSID();
-            WiFiStateTextView.setText(ssid);
-            return true; // Connected to an access point
+            String ssid_message = "You are connected to: " + wifiInfo.getSSID();
+            String ssid_ssid = wifiInfo.getSSID();
+            WiFiStateTextView.setText(ssid_message);
+            if ( ssid_ssid.equals("\"kk\"")) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
         else {
             WiFiStateTextView.setText(R.string.WiFiDisabled);
@@ -187,13 +182,16 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void uploadClicked(View view) {
-
-        //dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
-        new Thread(new Runnable() {
-            public void run() {
-                uploadFile();
-            }
-        }).start();
+        if ( checkWifiOnAndConnected() ) {
+            new Thread(new Runnable() {
+                public void run() {
+                    uploadFile();
+                }
+            }).start();
+        }
+        else {
+            Toast.makeText(MainActivity.this, "Connect to kk before uploading", LENGTH_SHORT).show();
+        }
     }
 
 
@@ -222,10 +220,10 @@ public class MainActivity extends AppCompatActivity{
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("ENCTYPE", "multipart/form-data");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            conn.setRequestProperty("uploaded_file", file.getName());
+            conn.setRequestProperty("fileToUpload", file.getName());
             dos = new DataOutputStream(conn.getOutputStream());
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+            dos.writeBytes("Content-Disposition: form-data; name=\"fileToUpload\";filename=\""
                             + file.getName() + "\"" + lineEnd);
             dos.writeBytes(lineEnd);
             // create a buffer of  maximum size
@@ -250,8 +248,7 @@ public class MainActivity extends AppCompatActivity{
             if(serverResponseCode == 200){
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        Toast.makeText(MainActivity.this, "File Upload Complete.",
-                                LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "File Upload Complete.", LENGTH_SHORT).show();
                     }
                 });
             }
@@ -286,7 +283,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
 
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
@@ -297,7 +294,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onPause() {
         stopForegroundDispatch(this, mNfcAdapter);
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
 
         super.onPause();
     }
@@ -311,7 +308,7 @@ public class MainActivity extends AppCompatActivity{
          *
          * In our case this method gets called, when the user attaches a Tag to the device.
          */
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
 
         handleIntent(intent);
     }
