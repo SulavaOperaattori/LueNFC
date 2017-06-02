@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity{
     DownloadManager mgr;
     //File file;
     final int REQUEST_WRITE_STORAGE = 5;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +86,6 @@ public class MainActivity extends AppCompatActivity{
       
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
@@ -119,18 +117,22 @@ public class MainActivity extends AppCompatActivity{
 }
     private boolean checkWifiOnAndConnected() {
         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
-            WiFiStateTextView.setText(R.string.WiFiEnabled);
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
             if( wifiInfo.getNetworkId() == -1 ){
                 WiFiStateTextView.setText(R.string.WiFiEnabledDisconnected);
                 return false; // Not connected to an access point
             }
-            String ssid = "You are connected to: " + wifiInfo.getSSID();
-            WiFiStateTextView.setText(ssid);
-            return true; // Connected to an access point
+            String ssid_message = "You are connected to: " + wifiInfo.getSSID();
+            String ssid_ssid = wifiInfo.getSSID();
+            WiFiStateTextView.setText(ssid_message);
+            if ( ssid_ssid.equals("\"kk\"")) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
         else {
             WiFiStateTextView.setText(R.string.WiFiDisabled);
@@ -177,13 +179,16 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void uploadClicked(View view) {
-
-        //dialog = ProgressDialog.show(MainActivity.this, "", "Uploading file...", true);
-        new Thread(new Runnable() {
-            public void run() {
-                uploadFile();
-            }
-        }).start();
+        if ( checkWifiOnAndConnected() ) {
+            new Thread(new Runnable() {
+                public void run() {
+                    uploadFile();
+                }
+            }).start();
+        }
+        else {
+            Toast.makeText(MainActivity.this, "Connect to kk before uploading", LENGTH_SHORT).show();
+        }
     }
 
 
@@ -240,8 +245,7 @@ public class MainActivity extends AppCompatActivity{
             if(serverResponseCode == 200){
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        Toast.makeText(MainActivity.this, "File Upload Complete.",
-                                LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "File Upload Complete.", LENGTH_SHORT).show();
                     }
                 });
             }
@@ -276,22 +280,36 @@ public class MainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
 
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
+        /**
+         * It's important, that the activity is in the foreground (resumed). Otherwise
+         * an IllegalStateException is thrown. 
+         */
+
+      
+
 
         setupForegroundDispatch(this, mNfcAdapter);
     }
     @Override
     protected void onPause() {
         stopForegroundDispatch(this, mNfcAdapter);
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
 
         super.onPause();
     }
     @Override
     protected void onNewIntent(Intent intent) {
 
+        /**
+         * This method gets called, when a new Intent gets associated with the current activity instance.
+         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
+         * at the documentation.
+         *
+         * In our case this method gets called, when the user attaches a Tag to the device.
+         */
+        //checkWifiOnAndConnected();
 
-        checkWifiOnAndConnected();
 
         handleIntent(intent);
     }
