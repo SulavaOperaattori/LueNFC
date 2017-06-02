@@ -10,4 +10,7 @@
     <string name="WiFiDisabled">WiFi is disabled</string>
     <string name="WiFiEnabledConnected">WiFi is enabled and connected to network</string>
     <string name="WiFiEnabledDisconnected">WiFi is enabled but not connected to network</string>
+    <string name="open_wifi_settings">Open Wifi settings</string>
+    <string name="nfcstatus">GENEERINEN ILMOITUS</string>
+    <string name="wifistatus">WiFi verkko</string>
 </resources>

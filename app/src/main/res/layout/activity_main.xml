@@ -20,27 +20,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:layout_weight="1"
-        android:text="GENEERINEN ILMOITUS"
+        android:text="@string/nfcstatus"
         android:layout_alignParentTop="true" />
+    <TextView
+        android:id="@+id/textView_WiFiState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textView_explanation"
+        android:gravity="center_horizontal"
+        android:text="@string/wifistatus" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:layout_below="@id/textView_explanation"
+        android:layout_below="@id/textView_WiFiState"
         android:orientation="vertical"
         android:id="@+id/linearLayout">
 
 
-        <TextView
-            android:id="@+id/textView_WiFiState"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:text="GENEERINEN ILMOITUS 2" />
 
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/open_wifi_settings"
+            android:id="@+id/WiFi"/>
         <Button
             android:id="@+id/more_info"
             android:layout_width="match_parent"
@@ -63,36 +67,24 @@
             android:enabled="false"
             android:onClick="uploadClicked"
             android:text="@string/upload"/>
+
         <Button
-            android:layout_width="fill_parent"
+            android:id="@+id/manual"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Open Wifi settings"
-            android:id="@+id/WiFi"
-            />
+            android:enabled="false"
+            android:onClick="openManual"
+            android:text="@string/manual"/>
 
     </LinearLayout>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:srcCompat="@mipmap/oamk"/>
 
-    <Button
-        android:id="@+id/manual"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:onClick="openManual"
-        android:text="@string/manual"
-        android:layout_below="@+id/linearLayout"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>

@@ -4,15 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -23,10 +18,9 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,10 +54,6 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
     private TextView WiFiStateTextView;
-
-
- 
-    private String[] splitString;
 
     private Button informationButton, uploadButton, downloadButton;
     private Vector<String> results;
@@ -149,7 +139,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
@@ -222,10 +212,10 @@ public class MainActivity extends AppCompatActivity{
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("ENCTYPE", "multipart/form-data");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            conn.setRequestProperty("uploaded_file", file.getName());
+            conn.setRequestProperty("fileToUpload", file.getName());
             dos = new DataOutputStream(conn.getOutputStream());
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+            dos.writeBytes("Content-Disposition: form-data; name=\"fileToUpload\";filename=\""
                             + file.getName() + "\"" + lineEnd);
             dos.writeBytes(lineEnd);
             // create a buffer of  maximum size
@@ -287,10 +277,6 @@ public class MainActivity extends AppCompatActivity{
         super.onResume();
 
         checkWifiOnAndConnected();
-        /**
-         * It's important, that the activity is in the foreground (resumed). Otherwise
-         * an IllegalStateException is thrown. 
-         */
 
         setupForegroundDispatch(this, mNfcAdapter);
     }
@@ -304,13 +290,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onNewIntent(Intent intent) {
 
-        /**
-         * This method gets called, when a new Intent gets associated with the current activity instance.
-         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-         * at the documentation.
-         *
-         * In our case this method gets called, when the user attaches a Tag to the device.
-         */
+
         checkWifiOnAndConnected();
 
         handleIntent(intent);
@@ -371,6 +351,9 @@ public class MainActivity extends AppCompatActivity{
     public void infoClicked(View view) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
         startActivity(browserIntent);
+    }
+
+    public void openManual(View view) {
     }
 
 
