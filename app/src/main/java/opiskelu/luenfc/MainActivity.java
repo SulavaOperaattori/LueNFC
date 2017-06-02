@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView mTextView;
     private TextView WiFiStateTextView;
+    private String ssid_ssid;
 
     private Button informationButton, uploadButton, downloadButton;
     private Vector<String> results;
@@ -125,14 +126,9 @@ public class MainActivity extends AppCompatActivity{
                 return false; // Not connected to an access point
             }
             String ssid_message = "You are connected to: " + wifiInfo.getSSID();
-            String ssid_ssid = wifiInfo.getSSID();
+            ssid_ssid = wifiInfo.getSSID();
             WiFiStateTextView.setText(ssid_message);
-            if ( ssid_ssid.equals("\"kk\"")) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return true;
         }
         else {
             WiFiStateTextView.setText(R.string.WiFiDisabled);
@@ -165,21 +161,25 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
-        isFilePresent();
-        mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        String file_url = serverURL + "files/test.xlsx";
-        Uri uri=Uri.parse(file_url);
-        Toast.makeText(MainActivity.this, "Downloading.", LENGTH_SHORT).show();
-        mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
-                .setAllowedOverRoaming(false)
-                .setTitle("PrinLab")
-                .setDescription("Excel-file")
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
+        checkWifiOnAndConnected();
+        if ( ssid_ssid.equals("\"kk\"") ) {
 
+            isFilePresent();
+            mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+            String file_url = serverURL + "files/test.xlsx";
+            Uri uri = Uri.parse(file_url);
+            Toast.makeText(MainActivity.this, "Downloading.", LENGTH_SHORT).show();
+            mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                    .setAllowedOverRoaming(false)
+                    .setTitle("PrinLab")
+                    .setDescription("Excel-file")
+                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
+        }
     }
 
     public void uploadClicked(View view) {
-        if ( checkWifiOnAndConnected() ) {
+        checkWifiOnAndConnected();
+        if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
                     uploadFile();
@@ -428,18 +428,20 @@ public class MainActivity extends AppCompatActivity{
                 //splitString = result.split("\\s+");
 
                 infoLink = link + results.elementAt(1);
-              
-
-                Log.i("NFC", "sql haku");
-                new SigningActivity().execute(results.elementAt(0));
-
 
                 informationButton.setEnabled(true);
 
+                if ( checkWifiOnAndConnected() ) {
+                    if (ssid_ssid.equals("\"kk\"")) {
+
+                        Log.i("NFC", "sql haku");
+                        new SigningActivity().execute(results.elementAt(0));
 
 
-                uploadButton.setEnabled(true);
-                downloadButton.setEnabled(true);
+                        uploadButton.setEnabled(true);
+                        downloadButton.setEnabled(true);
+                    }
+                }
             }
         }
     }
@@ -465,7 +467,7 @@ public class MainActivity extends AppCompatActivity{
 
                 // Check for error node in json
                 if (!error) {
-
+                    // TODO tietokannasta hakemista
                     //JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
