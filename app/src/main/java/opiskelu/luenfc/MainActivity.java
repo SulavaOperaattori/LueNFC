@@ -4,10 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -47,12 +49,12 @@ public class MainActivity extends AppCompatActivity{
     public static final String TAG = "NfcDemo";
 
     private NfcAdapter mNfcAdapter;
-    private TextView mTextView;
     private TextView WiFiStateTextView;
     private String ssid_ssid;
 
     private Button informationButton, uploadButton, downloadButton;
     private Vector<String> results;
+    
     fileTransfer fileTransferObject;
 
     final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
@@ -74,12 +76,14 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
-                checkWifiOnAndConnected();
+
+                //
+
             }
         });
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
+        TextView mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
@@ -106,6 +110,8 @@ public class MainActivity extends AppCompatActivity{
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         }
         checkWifiOnAndConnected();
+
+        registerReceiver(new MyReceiver(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 }
     private boolean checkWifiOnAndConnected() {
@@ -153,7 +159,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
         if ( ssid_ssid.equals("\"kk\"") ) {
             isFilePresent();
             fileTransferObject.downloadFile(MainActivity.this);
@@ -162,7 +168,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void uploadClicked(View view) {
-        checkWifiOnAndConnected();
+        //checkWifiOnAndConnected();
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
@@ -180,29 +186,18 @@ public class MainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
 
-        /**
-         * It's important, that the activity is in the foreground (resumed). Otherwise
-         * an IllegalStateException is thrown. 
-         */
-
         setupForegroundDispatch(this, mNfcAdapter);
+        //checkWifiOnAndConnected();
     }
     @Override
     protected void onPause() {
+        //unregisterReceiver(myReceiver);
         stopForegroundDispatch(this, mNfcAdapter);
 
         super.onPause();
     }
     @Override
     protected void onNewIntent(Intent intent) {
-
-        /**
-         * This method gets called, when a new Intent gets associated with the current activity instance.
-         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-         * at the documentation.
-         *
-         * In our case this method gets called, when the user attaches a Tag to the device.
-         */;
 
         handleIntent(intent);
     }
@@ -379,6 +374,17 @@ public class MainActivity extends AppCompatActivity{
 
             }
             return null;
+        }
+    }
+
+    private class MyReceiver extends BroadcastReceiver {
+        public MyReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("API123",""+intent.getAction());
+            checkWifiOnAndConnected();
         }
     }
 }
