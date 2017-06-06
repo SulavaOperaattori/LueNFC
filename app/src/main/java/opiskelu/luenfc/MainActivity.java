@@ -32,13 +32,8 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Vector;
@@ -58,7 +53,7 @@ public class MainActivity extends AppCompatActivity{
 
     private Button informationButton, uploadButton, downloadButton;
     private Vector<String> results;
-
+    fileTransfer fileTransferObject;
 
     final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
     String infoLink;
@@ -66,11 +61,9 @@ public class MainActivity extends AppCompatActivity{
     final String serverURL = "http://193.167.148.46/";
     String upLoadServerUri = null;
 
-    int serverResponseCode = 0;
-    //ProgressDialog dialog = null;
     DownloadManager mgr;
-    //File file;
     final int REQUEST_WRITE_STORAGE = 5;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,14 +77,13 @@ public class MainActivity extends AppCompatActivity{
                 checkWifiOnAndConnected();
             }
         });
-      
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
-
+        fileTransferObject = new fileTransfer();
         upLoadServerUri = serverURL + "upload.php";
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -163,17 +155,9 @@ public class MainActivity extends AppCompatActivity{
     public void downloadClicked(View view) {
         checkWifiOnAndConnected();
         if ( ssid_ssid.equals("\"kk\"") ) {
-
             isFilePresent();
-            mgr = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-            String file_url = serverURL + "files/test.xlsx";
-            Uri uri = Uri.parse(file_url);
-            Toast.makeText(MainActivity.this, "Downloading.", LENGTH_SHORT).show();
-            mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
-                    .setAllowedOverRoaming(false)
-                    .setTitle("PrinLab")
-                    .setDescription("Excel-file")
-                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
+            fileTransferObject.downloadFile(MainActivity.this);
+
         }
     }
 
@@ -182,7 +166,7 @@ public class MainActivity extends AppCompatActivity{
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
-                    uploadFile();
+                    fileTransferObject.uploadFile(MainActivity.this);
                 }
             }).start();
         }
@@ -192,109 +176,20 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void uploadFile() {
-        HttpURLConnection conn;
-        DataOutputStream dos;
-        String lineEnd = "\r\n";
-        String twoHyphens = "--";
-        String boundary = "*****";
-        int bytesRead, bytesAvailable, bufferSize;
-        byte[] buffer;
-
-        int maxBufferSize = 1024 * 1024;
-
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
-        try {
-            // open a URL connection to the Servlet
-            FileInputStream fileInputStream = new FileInputStream(file);
-            URL url = new URL(upLoadServerUri);
-            // Open a HTTP  connection to  the URL
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoInput(true); // Allow Inputs
-            conn.setDoOutput(true); // Allow Outputs
-            conn.setUseCaches(false); // Don't use a Cached Copy
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Connection", "Keep-Alive");
-            conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            conn.setRequestProperty("fileToUpload", file.getName());
-            dos = new DataOutputStream(conn.getOutputStream());
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"fileToUpload\";filename=\""
-                            + file.getName() + "\"" + lineEnd);
-            dos.writeBytes(lineEnd);
-            // create a buffer of  maximum size
-            bytesAvailable = fileInputStream.available();
-            bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            buffer = new byte[bufferSize];
-            // read file and write it into form...
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-            while (bytesRead > 0) {
-                dos.write(buffer, 0, bufferSize);
-                bytesAvailable = fileInputStream.available();
-                bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-            }
-            // send multipart form data necesssary after file data...
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            // Responses from the server (code and message)
-            serverResponseCode = conn.getResponseCode();
-            String serverResponseMessage = conn.getResponseMessage();
-            Log.i("uploadFile", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
-            if(serverResponseCode == 200){
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        Toast.makeText(MainActivity.this, "File Upload Complete.", LENGTH_SHORT).show();
-                    }
-                });
-            }
-            //close the streams //
-            fileInputStream.close();
-            dos.flush();
-            dos.close();
-        } catch (MalformedURLException ex) {
-            //dialog.dismiss();
-            ex.printStackTrace();
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(MainActivity.this, "MalformedURLException",
-                            LENGTH_SHORT).show();
-                }
-            });
-            Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
-        } catch (Exception e) {
-            //dialog.dismiss();
-            e.printStackTrace();
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(MainActivity.this, "Got Exception : see logcat ",
-                            LENGTH_SHORT).show();
-                }
-            });
-        }
-        //dialog.dismiss();
-        //return serverResponseCode;
-    }
     @Override
     protected void onResume() {
         super.onResume();
 
-        //checkWifiOnAndConnected();
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
          */
-
-      
-
 
         setupForegroundDispatch(this, mNfcAdapter);
     }
     @Override
     protected void onPause() {
         stopForegroundDispatch(this, mNfcAdapter);
-        //checkWifiOnAndConnected();
 
         super.onPause();
     }
@@ -307,9 +202,7 @@ public class MainActivity extends AppCompatActivity{
          * at the documentation.
          *
          * In our case this method gets called, when the user attaches a Tag to the device.
-         */
-        //checkWifiOnAndConnected();
-
+         */;
 
         handleIntent(intent);
     }
@@ -437,7 +330,6 @@ public class MainActivity extends AppCompatActivity{
                         Log.i("NFC", "sql haku");
                         new SigningActivity().execute(results.elementAt(0));
 
-
                         uploadButton.setEnabled(true);
                         downloadButton.setEnabled(true);
                     }
@@ -446,7 +338,6 @@ public class MainActivity extends AppCompatActivity{
         }
     }
     private class SigningActivity extends AsyncTask<String, Void, Void> {
-
 
         protected void onPreExecute() {
 
