@@ -3,10 +3,7 @@ package opiskelu.luenfc;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -44,49 +41,57 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 public class MainActivity extends AppCompatActivity{
 
-    public static final String MIME_TEXT_PLAIN = "text/plain";
-    public static final String TAG = "NfcDemo";
+    // Muuttujien alustusta
+
+    private static final String MIME_TEXT_PLAIN = "text/plain";
+    private static final String TAG = "NfcDemo";
 
     private NfcAdapter mNfcAdapter;
     private TextView WiFiStateTextView;
     private String ssid_ssid;
 
-    private Button informationButton, uploadButton, downloadButton;
+    private Button informationButton, uploadButton, downloadButton, openManualButton;
     private Vector<String> results;
     
-    fileTransfer fileTransferObject;
+    private fileTransfer fileTransferObject;
 
-    final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
-    String infoLink;
+    private String infoLink;
 
-    final String serverURL = "http://193.167.148.46/";
-    String upLoadServerUri = null;
+    private final int REQUEST_WRITE_STORAGE = 5;
 
-    final int REQUEST_WRITE_STORAGE = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //onCreate-funktio suoritetaan aina kun ohjelman suoritus menee pääruutuun
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         WiFiStateTextView = (TextView) findViewById(R.id.textView_WiFiState);
         Button WiFi = (Button)findViewById(R.id.WiFi);
+
+        // WiFi.setOnClickListener luo uuden funktion, joka suoritetaan kun WiFi-nappia painetaan
+
         WiFi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
-
-                //
-
             }
         });
+
+        // Muuttujien ja nappien alustuksia
+
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         TextView mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
+        openManualButton = (Button) findViewById(R.id.manual);
         fileTransferObject = new fileTransfer();
-        upLoadServerUri = serverURL + "upload.php";
+
+        // Tarkistetaan, että laitteessa on NFC-ominaisuus, käyttäjälle ilmoitetaan mikäli laitteessa ei ole NFC-ominaisuutta, NFC ei ole päällä tai mikäli NFC on päällä.
+
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
@@ -103,23 +108,31 @@ public class MainActivity extends AppCompatActivity{
             mTextView.setText(R.string.enabled);
         }
 
+        // Tarkistetaan, että ohjelmalla on lupa kirjoittaa puhelimen muistiin
+
         boolean hasPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
         if (!hasPermission) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         }
+
+        // checkWifiOnAndConnected() tarkistaa puhelimen WiFi-yhteyden tilan, funktio palauttaa falsen mikäli laite ei ole yhdistetty verkkoon tai WiFi ei ole päällä, true kun WiFi on yhdistetty verkkoon.
+
         checkWifiOnAndConnected();
+
+        //RegisterReceiver tarkkailee, mikäli WiFi-yhteys muuttuu ja muuttaa pääruudun tekstikentän tekstiä eli näyttää käyttäjälle mihin WiFi-verkkoon laite on kytketty
 
         registerReceiver(new MyReceiver(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 }
     private boolean checkWifiOnAndConnected() {
+
         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapteri päällä
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
             if( wifiInfo.getNetworkId() == -1 ){
                 WiFiStateTextView.setText(R.string.WiFiEnabledDisconnected);
-                return false; // Not connected to an access point
+                return false; // Ei yhteydessä WiFi-verkkoon, WiFi on päällä
             }
             String ssid_message = "You are connected to: " + wifiInfo.getSSID();
             ssid_ssid = wifiInfo.getSSID();
@@ -128,22 +141,30 @@ public class MainActivity extends AppCompatActivity{
         }
         else {
             WiFiStateTextView.setText(R.string.WiFiDisabled);
-            return false; // Wi-Fi adapter is OFF
+            return false; // Wi-Fi ei ole päällä
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        // Tarkistaa, voiko laitteen sisäiseen muistiin kirjoittaa dataa
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
+
                 if(!(grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
                 }
             }
         }
     }
-    public void isFilePresent() {
+
+    private void isFilePresent() {
+
+       // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy ja jos ei niin uusi ladataan tilalle
+
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         if ( file.exists()) {
             Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
@@ -157,7 +178,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void downloadClicked(View view) {
-        //checkWifiOnAndConnected();
+
+        //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
+
         if ( ssid_ssid.equals("\"kk\"") ) {
             isFilePresent();
             fileTransferObject.downloadFile(MainActivity.this);
@@ -166,7 +189,10 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void uploadClicked(View view) {
-        //checkWifiOnAndConnected();
+
+        //Funktio suoritetaan kun käyttäjä painaa "Upload"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon niin luodaan uusi thread, jossa suoritetaan "Upload"-funktio
+        // joka lähettää tiedoston palvelimelle, käyttäjälle ilmoitetaan, mikäli laite on kytketty väärään verkkoon.
+
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
@@ -182,6 +208,9 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onResume() {
+
+        // Suoritetaan käyttäjän palatessa sovellukseen
+
         super.onResume();
 
         setupForegroundDispatch(this, mNfcAdapter);
@@ -189,7 +218,9 @@ public class MainActivity extends AppCompatActivity{
     }
     @Override
     protected void onPause() {
-        //unregisterReceiver(myReceiver);
+
+        // Suoritetaan käyttäjän "pysäyttäessä" sovelluksen, esim. kun käytetään jotain toista sovellusta
+
         stopForegroundDispatch(this, mNfcAdapter);
 
         super.onPause();
@@ -200,16 +231,23 @@ public class MainActivity extends AppCompatActivity{
         handleIntent(intent);
     }
     private void handleIntent(Intent intent) {
+
+        // Luetaan NFC-tag ja suoritetaan sen sisältö
+
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
             String type = intent.getType();
             if (MIME_TEXT_PLAIN.equals(type)) {
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 new NdefReaderTask().execute(tag);
-            } else {
+            }
+
+            else {
                 Log.d(TAG, "Wrong mime type: " + type);
             }
-        } else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
+        }
+
+        else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
             // In case we would still use the Tech Discovered Intent
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             String[] techList = tag.getTechList();
@@ -247,39 +285,76 @@ public class MainActivity extends AppCompatActivity{
      * @param activity The corresponding {@link Activity} requesting to stop the foreground dispatch.
      * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
      */
-    public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
+    private static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         adapter.disableForegroundDispatch(activity);
     }
 
 
     public void infoClicked(View view) {
+
+        //Avataan linkki PrinLabin infosivulle
+
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
         startActivity(browserIntent);
     }
 
     public void openManual(View view) {
+
+    //Avaa käyttöohjeen
+
+        displayManual();
+
     }
 
+    public void displayManual() {
+        String manualDirectory ="/Download";
+        File manual = null;
+        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/asd.pdf");
+
+        if ( manual.exists()) {
+
+            Log.e(TAG, "juu");
+
+            Intent openPDF = new Intent (Intent.ACTION_VIEW);
+            openPDF.setDataAndType(Uri.fromFile(manual), "application/pdf");
+            openPDF.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+            Intent intent = Intent.createChooser(openPDF, "Open Manual");
+            try {
+                startActivity(intent);
+            }
+            catch (ActivityNotFoundException e) {
+                Toast.makeText(MainActivity.this, "Install a PDF reader to open the PDF", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, Boolean> {
+
         @Override
         protected Boolean doInBackground(Tag... params) {
             boolean isOk = false;
             results.clear();
             Tag tag = params[0];
             Ndef ndef = Ndef.get(tag);
+
             if (ndef == null) {
                 // NDEF is not supported by this Tag.
                 return false;
             }
+
             NdefMessage ndefMessage = ndef.getCachedNdefMessage();
             NdefRecord[] records = ndefMessage.getRecords();
+
             for (NdefRecord ndefRecord : records) {
+
                 if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT  )) {
+
                     try {
                         results.add(readText(ndefRecord));
                         isOk = true;
                     }
+
                     catch (UnsupportedEncodingException e) {
                         Log.e(TAG, "Unsupported Encoding", e);
                     }
@@ -288,15 +363,9 @@ public class MainActivity extends AppCompatActivity{
             return isOk;
         }
         private String readText(NdefRecord record) throws UnsupportedEncodingException {
-        /*
-         * See NFC forum specification for "Text Record Type Definition" at 3.2.1
-         *
-         * http://www.nfc-forum.org/specs/
-         *
-         * bit_7 defines encoding
-         * bit_6 reserved for future use, must be 0
-         * bit_5..0 length of IANA language code
-         */
+
+            // Lukee NFC-tagin
+
             byte[] payload = record.getPayload();
             // Get the Text Encoding
             String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
@@ -310,10 +379,10 @@ public class MainActivity extends AppCompatActivity{
         @Override
         protected void onPostExecute(Boolean result) {
             if (result) {
-                //mTextView.setText("Read content: " + result);
-                //splitString = result.split("\\s+");
+
 
                 //infoLink = link + results.elementAt(1);
+
 
                 informationButton.setEnabled(true);
 
@@ -325,11 +394,13 @@ public class MainActivity extends AppCompatActivity{
 
                         uploadButton.setEnabled(true);
                         downloadButton.setEnabled(true);
+                        openManualButton.setEnabled(true);
                     }
                 }
             }
         }
     }
+
     private class SigningActivity extends AsyncTask<String, Void, Void> {
 
         protected void onPreExecute() {
@@ -339,7 +410,10 @@ public class MainActivity extends AppCompatActivity{
         @Override
         protected Void doInBackground(String... arg0) {
 
+            // Ottaa yhteyttä tietokantaan
+
             try {
+                final String serverURL = "http://193.167.148.46/";
                 String sqlLink = serverURL + "sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
 
@@ -358,25 +432,33 @@ public class MainActivity extends AppCompatActivity{
                     String url = device.getString("url");
                     infoLink = link + url;
                 } else {
+
                     // Error in login. Get the error message
                     String errorMsg = jObj.getString("error_msg");
                     Toast.makeText(getApplicationContext(),
                             errorMsg, Toast.LENGTH_LONG).show();
                 }
-            } catch (JSONException e) {
+
+            }
+
+            catch (JSONException e) {
                 // JSON error
                 e.printStackTrace();
                 Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
+            }
+
+            catch (Exception e) {
                 Toast.makeText(getApplicationContext(), "Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
 
             }
+
             return null;
         }
     }
 
     private class MyReceiver extends BroadcastReceiver {
-        public MyReceiver() {
+
+        private MyReceiver() {
         }
 
         @Override

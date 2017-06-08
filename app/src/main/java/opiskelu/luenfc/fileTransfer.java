@@ -22,6 +22,7 @@ class fileTransfer  {
 
     private final String serverURL = "http://193.167.148.46/";
 
+
     void downloadFile(final Activity activity) {
         DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         String file_url = serverURL + "files/test.xlsx";
