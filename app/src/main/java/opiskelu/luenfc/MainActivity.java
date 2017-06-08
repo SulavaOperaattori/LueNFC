@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity{
 
     private final int REQUEST_WRITE_STORAGE = 5;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -152,9 +153,8 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
-                if( (grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED) ) {
-                    Log.i(TAG, "Juu");
-                } else {
+
+                if(!(grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
                 }
             }
@@ -168,7 +168,9 @@ public class MainActivity extends AppCompatActivity{
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         if ( file.exists()) {
             Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
-            file.delete();
+            if(!file.delete()) {
+                Log.e("FILE", "Couldn't delete file");
+            }
         }
         else {
             Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
@@ -378,8 +380,9 @@ public class MainActivity extends AppCompatActivity{
         protected void onPostExecute(Boolean result) {
             if (result) {
 
-                final String link = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=";
-                infoLink = link + results.elementAt(1);
+
+                //infoLink = link + results.elementAt(1);
+
 
                 informationButton.setEnabled(true);
 
@@ -422,15 +425,14 @@ public class MainActivity extends AppCompatActivity{
 
                 // Check for error node in json
                 if (!error) {
-                    Log.e(TAG, "Juu");
-                    //JSONObject device = jObj.getJSONObject("device");
+                    // TODO tietokannasta hakemista
+                    JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
-                    //String url = device.getString("url");
-                    //infoLink = link + url;
-                }
+                    String url = device.getString("url");
+                    infoLink = link + url;
+                } else {
 
-                else {
                     // Error in login. Get the error message
                     String errorMsg = jObj.getString("error_msg");
                     Toast.makeText(getApplicationContext(),

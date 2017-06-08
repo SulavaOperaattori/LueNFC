@@ -17,19 +17,14 @@ import java.net.URL;
 import static android.content.Context.DOWNLOAD_SERVICE;
 import static android.widget.Toast.LENGTH_SHORT;
 
-/**
- * Created by nks on 06/06/17.
- */
 
-public class fileTransfer  {
+class fileTransfer  {
 
-    private String upLoadServerUri = null;
-    private int serverResponseCode = 0;
     private final String serverURL = "http://193.167.148.46/";
-    private DownloadManager mgr;
 
-    public void downloadFile (final Activity activity) {
-        mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
+
+    void downloadFile(final Activity activity) {
+        DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         String file_url = serverURL + "files/test.xlsx";
         Uri uri = Uri.parse(file_url);
         Toast.makeText(activity, "Downloading.", LENGTH_SHORT).show();
@@ -38,8 +33,8 @@ public class fileTransfer  {
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
     }
 
-    public void uploadFile(final Activity activity) {
-        upLoadServerUri = serverURL + "upload.php";
+    void uploadFile(final Activity activity) {
+        String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
         String lineEnd = "\r\n";
@@ -88,7 +83,7 @@ public class fileTransfer  {
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             // Responses from the server (code and message)
-            serverResponseCode = conn.getResponseCode();
+            int serverResponseCode = conn.getResponseCode();
             String serverResponseMessage = conn.getResponseMessage();
             Log.i("uploadFile", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
             if(serverResponseCode == 200){
