@@ -23,10 +23,10 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 public class fileTransfer  {
 
-    String upLoadServerUri = null;
-    int serverResponseCode = 0;
-    final String serverURL = "http://193.167.148.46/";
-    DownloadManager mgr;
+    private String upLoadServerUri = null;
+    private int serverResponseCode = 0;
+    private final String serverURL = "http://193.167.148.46/";
+    private DownloadManager mgr;
 
     public void downloadFile (final Activity activity) {
         mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
