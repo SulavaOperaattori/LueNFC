@@ -2,7 +2,6 @@ package opiskelu.luenfc;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity{
     final String serverURL = "http://193.167.148.46/";
     String upLoadServerUri = null;
 
-    DownloadManager mgr;
     final int REQUEST_WRITE_STORAGE = 5;
 
     @Override
@@ -139,9 +137,7 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_WRITE_STORAGE: {
-                if((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-
-                } else {
+                if(!(grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
                 }
             }
@@ -151,7 +147,9 @@ public class MainActivity extends AppCompatActivity{
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         if ( file.exists()) {
             Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
-            file.delete();
+            if(!file.delete()) {
+                Log.e("FILE", "Couldn't delete file");
+            }
         }
         else {
             Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
@@ -315,7 +313,7 @@ public class MainActivity extends AppCompatActivity{
                 //mTextView.setText("Read content: " + result);
                 //splitString = result.split("\\s+");
 
-                infoLink = link + results.elementAt(1);
+                //infoLink = link + results.elementAt(1);
 
                 informationButton.setEnabled(true);
 
@@ -354,11 +352,11 @@ public class MainActivity extends AppCompatActivity{
                 // Check for error node in json
                 if (!error) {
                     // TODO tietokannasta hakemista
-                    //JSONObject device = jObj.getJSONObject("device");
+                    JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
-                    //String url = device.getString("url");
-                    //infoLink = link + url;
+                    String url = device.getString("url");
+                    infoLink = link + url;
                 } else {
                     // Error in login. Get the error message
                     String errorMsg = jObj.getString("error_msg");
