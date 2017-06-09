@@ -248,8 +248,9 @@ public class MainActivity extends AppCompatActivity{
 
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-            String type = intent.getType();
-            if (MIME_TEXT_PLAIN.equals(type)) {
+            String type = intent.getScheme();
+            //String type = intent.getType();
+            if (type.equals("http")) {
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 new NdefReaderTask().execute(tag);
             }
@@ -286,11 +287,12 @@ public class MainActivity extends AppCompatActivity{
         filters[0] = new IntentFilter();
         filters[0].addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
         filters[0].addCategory(Intent.CATEGORY_DEFAULT);
-        try {
+        filters[0].addDataScheme("http");
+        /*try {
             filters[0].addDataType(MIME_TEXT_PLAIN);
         } catch (IntentFilter.MalformedMimeTypeException e) {
             throw new RuntimeException("Check your mime type.");
-        }
+        }*/
         adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
     }
     /**
@@ -356,6 +358,7 @@ public class MainActivity extends AppCompatActivity{
 
             if (ndef == null) {
                 // NDEF is not supported by this Tag.
+                Log.e("NFC", "error");
                 return false;
             }
 
@@ -369,6 +372,7 @@ public class MainActivity extends AppCompatActivity{
                     try {
                         results.add(readText(ndefRecord));
                         isOk = true;
+                        Log.i("NFC", results.elementAt(0));
                     }
 
                     catch (UnsupportedEncodingException e) {
@@ -435,8 +439,8 @@ public class MainActivity extends AppCompatActivity{
                 String sqlLink = serverURL + "sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
                 HttpHandler sh = new HttpHandler();
-
                 String response = sh.makeServiceCall(sqlLink, data);
+
                 JSONObject jObj = new JSONObject(response);
                 boolean error = jObj.getBoolean("error");
 
@@ -445,6 +449,7 @@ public class MainActivity extends AppCompatActivity{
                     JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     final String name = "Device name: " + device.getString("name");
+                    Log.i("JSON", name);
                     runOnUiThread(new Runnable() {
                         public void run() {
                             mTextView.setText(name);
