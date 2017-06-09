@@ -311,18 +311,23 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void openManual(View view) {
-    //Avaa käyttöohjeen
-        //Toast.makeText(getApplicationContext(), deviceName, Toast.LENGTH_LONG).show();
+    // Suoritetaan funktio, jossa avataan käyttöohje
+
         displayManual();
 
     }
 
     public void displayManual() {
+
+        //Määritetään kansio, johon tiedostoja ladataan, manual luodaan uusi objekti, jolle annetaan parametrinä hakemiston kohde
+
         String manualDirectory ="/Download";
         File manual;
         manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
 
         if ( manual.exists()) {
+
+            // Jos manual on jo olemassa, näytetään käyttäjälle ruutu, jossa valitaan PDF:n avaamiseen ohjelma, tämän jälkeen ohjelma avataan
 
             Intent openPDF = new Intent (Intent.ACTION_VIEW);
             openPDF.setDataAndType(Uri.fromFile(manual), "application/pdf");
@@ -419,7 +424,9 @@ public class MainActivity extends AppCompatActivity{
         @Override
         protected Void doInBackground(String... arg0) {
 
-            // Ottaa yhteyttä tietokantaan
+            // Ottaa yhteyttä tietokantaan, hakee tietokannasta NFC-tagin ID:n perusteella laitteen nimen.
+            // Nimi tallennetaan muuttujaan "deviceName", ja tämän perusteella ohjelma osaa avata verkkosivun tai avata käyttöohjeen
+            // infoLink sisältää PrinLab:n verkko-osoitteen ja laitteen nimi lisätään perään
 
             try {
                 final String serverURL = "http://193.167.148.46/";
