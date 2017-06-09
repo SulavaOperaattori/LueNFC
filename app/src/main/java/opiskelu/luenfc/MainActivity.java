@@ -320,7 +320,9 @@ public class MainActivity extends AppCompatActivity{
     public void displayManual() {
         String manualDirectory ="/Download";
         File manual;
+
         manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
+
 
         if ( manual.exists()) {
 
@@ -436,8 +438,10 @@ public class MainActivity extends AppCompatActivity{
                     JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
+
                     deviceName = device.getString("url");
                     infoLink = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=" + deviceName;
+
                 } else {
 
                     // Error in login. Get the error message
