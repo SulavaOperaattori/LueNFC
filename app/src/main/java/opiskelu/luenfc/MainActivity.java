@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity{
     private Vector<String> results;
     private MyReceiver mr;
     private fileTransfer fileTransferObject;
-
+    private TextView mTextView;
     private String infoLink;
 
     private final int REQUEST_WRITE_STORAGE = 5;
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity{
 
         results = new Vector<>();
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        TextView mTextView = (TextView) findViewById(R.id.textView_explanation);
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
         informationButton = (Button) findViewById(R.id.more_info);
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
@@ -117,14 +117,14 @@ public class MainActivity extends AppCompatActivity{
 
         // checkWifiOnAndConnected() tarkistaa puhelimen WiFi-yhteyden tilan, funktio palauttaa falsen mikäli laite ei ole yhdistetty verkkoon tai WiFi ei ole päällä, true kun WiFi on yhdistetty verkkoon.
 
-        checkWifiOnAndConnected();
+        checkWifiConnection();
 
         //RegisterReceiver tarkkailee, mikäli WiFi-yhteys muuttuu ja muuttaa pääruudun tekstikentän tekstiä eli näyttää käyttäjälle mihin WiFi-verkkoon laite on kytketty
         mr = new MyReceiver();
         registerReceiver(mr, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 }
-    private boolean checkWifiOnAndConnected() {
+    private boolean checkWifiConnection() {
 
         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapteri päällä
@@ -397,7 +397,7 @@ public class MainActivity extends AppCompatActivity{
 
                 informationButton.setEnabled(true);
 
-                if ( checkWifiOnAndConnected() ) {
+                if ( checkWifiConnection() ) {
                     if (ssid_ssid.equals("\"kk\"")) {
 
                         Log.i("NFC", "sql haku");
@@ -437,7 +437,13 @@ public class MainActivity extends AppCompatActivity{
                 if (!error) {
                     JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
-                    //String name = device.getString("name");
+                    final String name = "Device name: " + device.getString("name");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            mTextView.setText(name);
+                        }
+                    });
+
 
                     deviceName = device.getString("url");
                     infoLink = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=" + deviceName;
@@ -473,8 +479,7 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("API123",""+intent.getAction());
-            checkWifiOnAndConnected();
+            checkWifiConnection();
         }
     }
 }
