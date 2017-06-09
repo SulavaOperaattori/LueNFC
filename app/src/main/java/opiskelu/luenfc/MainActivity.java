@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -307,9 +308,12 @@ public class MainActivity extends AppCompatActivity{
     public void infoClicked(View view) {
 
         //Avataan linkki PrinLabin infosivulle
-
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
-        startActivity(browserIntent);
+        ConnectivityManager cm = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if( activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
+            startActivity(browserIntent);
+        }
     }
 
     public void openManual(View view) {
