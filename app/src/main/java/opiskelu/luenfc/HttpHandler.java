@@ -26,10 +26,12 @@ class HttpHandler {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
+            Log.i("HTTPHANDLER", "test");
             OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
 
             wr.write(reqData);
             wr.flush();
+
 
             // read the response
             InputStream in = new BufferedInputStream(conn.getInputStream());
