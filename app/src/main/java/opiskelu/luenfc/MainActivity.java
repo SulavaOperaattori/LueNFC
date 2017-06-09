@@ -49,10 +49,10 @@ public class MainActivity extends AppCompatActivity{
     private NfcAdapter mNfcAdapter;
     private TextView WiFiStateTextView;
     private String ssid_ssid;
-
+    public String deviceName;
     private Button informationButton, uploadButton, downloadButton, openManualButton;
     private Vector<String> results;
-    
+    private MyReceiver mr;
     private fileTransfer fileTransferObject;
 
     private String infoLink;
@@ -120,8 +120,8 @@ public class MainActivity extends AppCompatActivity{
         checkWifiOnAndConnected();
 
         //RegisterReceiver tarkkailee, mikäli WiFi-yhteys muuttuu ja muuttaa pääruudun tekstikentän tekstiä eli näyttää käyttäjälle mihin WiFi-verkkoon laite on kytketty
-
-        registerReceiver(new MyReceiver(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        mr = new MyReceiver();
+        registerReceiver(mr, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 }
     private boolean checkWifiOnAndConnected() {
@@ -205,6 +205,12 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    @Override
+    protected void onStop(){
+
+        Log.e("stop", "lopetetaan");
+        super.onStop();
+    }
 
     @Override
     protected void onResume() {
@@ -212,7 +218,6 @@ public class MainActivity extends AppCompatActivity{
         // Suoritetaan käyttäjän palatessa sovellukseen
 
         super.onResume();
-
         setupForegroundDispatch(this, mNfcAdapter);
         //checkWifiOnAndConnected();
     }
@@ -225,6 +230,13 @@ public class MainActivity extends AppCompatActivity{
 
         super.onPause();
     }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mr);
+        super.onDestroy();
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
 
@@ -299,21 +311,18 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void openManual(View view) {
-
     //Avaa käyttöohjeen
-
+        //Toast.makeText(getApplicationContext(), deviceName, Toast.LENGTH_LONG).show();
         displayManual();
 
     }
 
     public void displayManual() {
         String manualDirectory ="/Download";
-        File manual = null;
-        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/asd.pdf");
+        File manual;
+        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
 
         if ( manual.exists()) {
-
-            Log.e(TAG, "juu");
 
             Intent openPDF = new Intent (Intent.ACTION_VIEW);
             openPDF.setDataAndType(Uri.fromFile(manual), "application/pdf");
@@ -416,7 +425,6 @@ public class MainActivity extends AppCompatActivity{
                 final String serverURL = "http://193.167.148.46/";
                 String sqlLink = serverURL + "sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
-
                 HttpHandler sh = new HttpHandler();
 
                 String response = sh.makeServiceCall(sqlLink, data);
@@ -425,18 +433,16 @@ public class MainActivity extends AppCompatActivity{
 
                 // Check for error node in json
                 if (!error) {
-                    // TODO tietokannasta hakemista
                     JSONObject device = jObj.getJSONObject("device");
                     //String id = jObj.getString("id");
                     //String name = device.getString("name");
-                    String url = device.getString("url");
-                    infoLink = link + url;
+                    deviceName = device.getString("url");
+                    infoLink = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=" + deviceName;
                 } else {
 
                     // Error in login. Get the error message
                     String errorMsg = jObj.getString("error_msg");
-                    Toast.makeText(getApplicationContext(),
-                            errorMsg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
                 }
 
             }
