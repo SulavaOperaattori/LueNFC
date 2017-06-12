@@ -181,12 +181,13 @@ public class MainActivity extends AppCompatActivity{
     public void downloadClicked(View view) {
 
         //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
+        checkWifiConnection();
 
         if ( ssid_ssid.equals("\"kk\"") ) {
             isFilePresent();
             fileTransferObject.downloadFile(MainActivity.this);
-
         }
+
     }
 
     public void uploadClicked(View view) {
@@ -404,9 +405,7 @@ public class MainActivity extends AppCompatActivity{
         protected void onPostExecute(Boolean result) {
             if (result) {
 
-
                 //infoLink = link + results.elementAt(1);
-
 
                 informationButton.setEnabled(true);
 
