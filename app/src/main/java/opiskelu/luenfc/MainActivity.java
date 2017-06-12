@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity{
 
     // Muuttujien alustusta
 
-    private static final String MIME_TEXT_PLAIN = "text/plain";
+    //private static final String MIME_TEXT_PLAIN = "text/plain";
     private static final String TAG = "NfcDemo";
 
     private NfcAdapter mNfcAdapter;
@@ -308,12 +308,9 @@ public class MainActivity extends AppCompatActivity{
     public void infoClicked(View view) {
 
         //Avataan linkki PrinLabin infosivulle
-        ConnectivityManager cm = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if( activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
+          Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
             startActivity(browserIntent);
-        }
+
     }
 
     public void openManual(View view) {
@@ -407,8 +404,11 @@ public class MainActivity extends AppCompatActivity{
 
                 //infoLink = link + results.elementAt(1);
 
-
-                informationButton.setEnabled(true);
+                ConnectivityManager cm = (ConnectivityManager)MainActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                if( activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                    informationButton.setEnabled(true);
+                }
 
                 if ( checkWifiConnection() ) {
                     if (ssid_ssid.equals("\"kk\"")) {
@@ -496,6 +496,10 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public void onReceive(Context context, Intent intent) {
             checkWifiConnection();
+            downloadButton.setEnabled(false);
+            uploadButton.setEnabled(false);
+            openManualButton.setEnabled(false);
+            informationButton.setEnabled(false);
         }
     }
 }
