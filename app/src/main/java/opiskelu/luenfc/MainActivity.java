@@ -182,8 +182,8 @@ public class MainActivity extends AppCompatActivity{
         //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
 
         if ( ssid_ssid.equals("\"kk\"") ) {
-            isFilePresent("test.xlsx");
-            fileTransferObject.downloadFile(MainActivity.this, "test.xlsx");
+            isFilePresent(deviceName + ".xlsx");
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".xlsx");
 
         }
     }
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity{
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
-                    fileTransferObject.uploadFile(MainActivity.this, "test.xlsx");
+                    fileTransferObject.uploadFile(MainActivity.this, deviceName + ".xlsx");
                 }
             }).start();
         }
@@ -325,6 +325,11 @@ public class MainActivity extends AppCompatActivity{
 
         String manualDirectory ="/Download";
         File manual;
+        if ( ssid_ssid.equals("\"kk\"") ) {
+            isFilePresent(deviceName + ".pdf");
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
+
+        }
 
         manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
 
@@ -499,6 +504,7 @@ public class MainActivity extends AppCompatActivity{
             uploadButton.setEnabled(false);
             openManualButton.setEnabled(false);
             informationButton.setEnabled(false);
+            mTextView.setText(R.string.nfcstatus);
         }
     }
 }
