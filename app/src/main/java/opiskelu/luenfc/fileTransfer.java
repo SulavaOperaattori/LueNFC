@@ -106,7 +106,7 @@ class fileTransfer  {
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
     }
 
-    void uploadFile(final Activity activity) {
+    void uploadFile(final Activity activity, String filename) {
         String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
@@ -118,7 +118,7 @@ class fileTransfer  {
 
         int maxBufferSize = 1024 * 1024;
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
         try {
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);

@@ -69,8 +69,21 @@ public class MainActivity extends AppCompatActivity{
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // Muuttujien ja nappien alustuksia
+
+        results = new Vector<>();
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
         WiFiStateTextView = (TextView) findViewById(R.id.textView_WiFiState);
+
         Button WiFi = (Button)findViewById(R.id.WiFi);
+        informationButton = (Button) findViewById(R.id.more_info);
+        uploadButton = (Button) findViewById(R.id.upload);
+        downloadButton = (Button) findViewById(R.id.download);
+        openManualButton = (Button) findViewById(R.id.manual);
+        fileTransferObject = new fileTransfer();
 
         // WiFi.setOnClickListener luo uuden funktion, joka suoritetaan kun WiFi-nappia painetaan
 
@@ -80,17 +93,6 @@ public class MainActivity extends AppCompatActivity{
                 startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
             }
         });
-
-        // Muuttujien ja nappien alustuksia
-
-        results = new Vector<>();
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
-        informationButton = (Button) findViewById(R.id.more_info);
-        uploadButton = (Button) findViewById(R.id.upload);
-        downloadButton = (Button) findViewById(R.id.download);
-        openManualButton = (Button) findViewById(R.id.manual);
-        fileTransferObject = new fileTransfer();
 
         // Tarkistetaan, että laitteessa on NFC-ominaisuus, käyttäjälle ilmoitetaan mikäli laitteessa ei ole NFC-ominaisuutta, NFC ei ole päällä tai mikäli NFC on päällä.
 
@@ -183,7 +185,7 @@ public class MainActivity extends AppCompatActivity{
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
-                    fileTransferObject.uploadFile(MainActivity.this);
+                    fileTransferObject.uploadFile(MainActivity.this, deviceName + ".xlsx");
                 }
             }).start();
         }
