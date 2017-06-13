@@ -22,17 +22,17 @@ class fileTransfer  {
 
     private final String serverURL = "http://193.167.148.46/";
 
-    void downloadFile(final Activity activity) {
+    void downloadFile(final Activity activity, String deviceName) {
         DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
-        String file_url = serverURL + "files/test.xlsx";
+        String file_url = serverURL + "files/test.xlsx"; // TÄSÄ ON VIKA
         Uri uri = Uri.parse(file_url);
         Toast.makeText(activity, "Downloading.", LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE).setAllowedOverRoaming(false).setTitle("PrinLab")
                 .setDescription("Excel-file")
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "test.xlsx"));
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, deviceName + ".xlsx"));
     }
 
-    void uploadFile(final Activity activity) {
+    void uploadFile(final Activity activity, String deviceName) {
         String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
@@ -44,7 +44,7 @@ class fileTransfer  {
 
         int maxBufferSize = 1024 * 1024;
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), deviceName + ".xlsx");
         try {
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);
