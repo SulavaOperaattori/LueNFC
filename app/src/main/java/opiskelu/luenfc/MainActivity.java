@@ -68,11 +68,22 @@ public class MainActivity extends AppCompatActivity{
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+
+        // Muuttujien ja nappien alustuksia
+
+        results = new Vector<>();
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
         WiFiStateTextView = (TextView) findViewById(R.id.textView_WiFiState);
-        Button WiFi = (Button)findViewById(R.id.WiFi);
+        Button WiFi = (Button)findViewById(R.id.WiFi);informationButton = (Button) findViewById(R.id.more_info);
+        uploadButton = (Button) findViewById(R.id.upload);
+        downloadButton = (Button) findViewById(R.id.download);
+        openManualButton = (Button) findViewById(R.id.manual);
+        fileTransferObject = new fileTransfer();
 
         // WiFi.setOnClickListener luo uuden funktion, joka suoritetaan kun WiFi-nappia painetaan
-
         WiFi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,19 +91,7 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        // Muuttujien ja nappien alustuksia
-
-        results = new Vector<>();
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
-        informationButton = (Button) findViewById(R.id.more_info);
-        uploadButton = (Button) findViewById(R.id.upload);
-        downloadButton = (Button) findViewById(R.id.download);
-        openManualButton = (Button) findViewById(R.id.manual);
-        fileTransferObject = new fileTransfer();
-
         // Tarkistetaan, että laitteessa on NFC-ominaisuus, käyttäjälle ilmoitetaan mikäli laitteessa ei ole NFC-ominaisuutta, NFC ei ole päällä tai mikäli NFC on päällä.
-
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
@@ -162,19 +161,19 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void isFilePresent() {
+    private void isFilePresent(String filename) {
 
        // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy ja jos ei niin uusi ladataan tilalle
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
         if ( file.exists()) {
             Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
             if(!file.delete()) {
-                Log.e("FILE", "Couldn't delete file");
+                Log.e("FILE", "Couldn't delete " + filename);
             }
         }
         else {
-            Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, filename + " doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
         }
     }
 
@@ -183,8 +182,8 @@ public class MainActivity extends AppCompatActivity{
         //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
 
         if ( ssid_ssid.equals("\"kk\"") ) {
-            isFilePresent();
-            fileTransferObject.downloadFile(MainActivity.this);
+            isFilePresent(deviceName + ".xlsx");
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".xlsx");
 
         }
     }
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity{
         if ( ssid_ssid.equals("\"kk\"") ) {
             new Thread(new Runnable() {
                 public void run() {
-                    fileTransferObject.uploadFile(MainActivity.this);
+                    fileTransferObject.uploadFile(MainActivity.this, deviceName + ".xlsx");
                 }
             }).start();
         }
@@ -326,6 +325,11 @@ public class MainActivity extends AppCompatActivity{
 
         String manualDirectory ="/Download";
         File manual;
+        if ( ssid_ssid.equals("\"kk\"") ) {
+            isFilePresent(deviceName + ".pdf");
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
+
+        }
 
         manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
 
@@ -500,6 +504,7 @@ public class MainActivity extends AppCompatActivity{
             uploadButton.setEnabled(false);
             openManualButton.setEnabled(false);
             informationButton.setEnabled(false);
+            mTextView.setText(R.string.nfcstatus);
         }
     }
 }
