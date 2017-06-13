@@ -3,7 +3,10 @@ package opiskelu.luenfc;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -16,12 +19,11 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,7 +33,6 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -162,29 +163,14 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void isFilePresent() {
 
-       // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy ja jos ei niin uusi ladataan tilalle
-
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
-        if ( file.exists()) {
-            Toast.makeText(MainActivity.this, "File exists, deleting file...", LENGTH_SHORT).show();
-            if(!file.delete()) {
-                Log.e("FILE", "Couldn't delete file");
-            }
-        }
-        else {
-            Toast.makeText(MainActivity.this, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
-        }
-    }
 
     public void downloadClicked(View view) {
 
         //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
 
         if ( ssid_ssid.equals("\"kk\"") ) {
-            isFilePresent();
-            fileTransferObject.downloadFile(MainActivity.this);
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".xlsx");
 
         }
     }
@@ -316,37 +302,13 @@ public class MainActivity extends AppCompatActivity{
     public void openManual(View view) {
     // Suoritetaan funktio, jossa avataan käyttöohje
 
-        displayManual();
+        if ( ssid_ssid.equals("\"kk\"") ) {
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
 
+        }
     }
 
-    public void displayManual() {
 
-        //Määritetään kansio, johon tiedostoja ladataan, manual luodaan uusi objekti, jolle annetaan parametrinä hakemiston kohde
-
-        String manualDirectory ="/Download";
-        File manual;
-
-/*        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
-
-/*
-        if ( manual.exists()) {
-
-            // Jos manual on jo olemassa, näytetään käyttäjälle ruutu, jossa valitaan PDF:n avaamiseen ohjelma, tämän jälkeen ohjelma avataan
-
-            Intent openPDF = new Intent (Intent.ACTION_VIEW);
-            openPDF.setDataAndType(Uri.fromFile(manual), "application/pdf");
-            openPDF.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-
-            Intent intent = Intent.createChooser(openPDF, "Open Manual");
-            try {
-                startActivity(intent);
-            }
-            catch (ActivityNotFoundException e) {
-                Toast.makeText(MainActivity.this, "Install a PDF reader to open the PDF", Toast.LENGTH_LONG).show();
-            }
-        }*/
-    }
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, Boolean> {
 

@@ -13,6 +13,6 @@
     <string name="open_wifi_settings">Open Wifi settings</string>
     <string name="nfcstatus">GENEERINEN ILMOITUS</string>
     <string name="wifistatus">WiFi verkko</string>
-    <string name="pdf_show_local_progress_title">test</string>
-    <string name="pdf_show_local_progress_content">test2</string>
+    <string name="dl_show_local_progress_title">test</string>
+    <string name="dl_show_local_progress_content">test2</string>
 </resources>
