@@ -29,9 +29,11 @@ class fileTransfer  {
 
     private final String serverURL = "http://193.167.148.46/";
 
+
     void downloadFile(final Activity activity, final String filename) {
         final DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         final String file_url = serverURL + "files/" + filename;
+
         Uri uri = Uri.parse(file_url);
         Log.e("DOWNLOAD", file_url);
         final ProgressDialog progress = ProgressDialog.show(
@@ -87,9 +89,10 @@ class fileTransfer  {
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
 
+
     }
 
-    void uploadFile(final Activity activity, String filename) {
+    void uploadFile(final Activity activity) {
         String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
@@ -101,7 +104,7 @@ class fileTransfer  {
 
         int maxBufferSize = 1024 * 1024;
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
         try {
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);
