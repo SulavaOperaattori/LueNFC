@@ -331,9 +331,9 @@ public class MainActivity extends AppCompatActivity{
 
         }
 
-        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
+/*        manual = new File(Environment.getExternalStorageDirectory()+manualDirectory+"/"+deviceName+".pdf");
 
-
+/*
         if ( manual.exists()) {
 
             // Jos manual on jo olemassa, näytetään käyttäjälle ruutu, jossa valitaan PDF:n avaamiseen ohjelma, tämän jälkeen ohjelma avataan
@@ -349,7 +349,7 @@ public class MainActivity extends AppCompatActivity{
             catch (ActivityNotFoundException e) {
                 Toast.makeText(MainActivity.this, "Install a PDF reader to open the PDF", Toast.LENGTH_LONG).show();
             }
-        }
+        }*/
     }
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, Boolean> {

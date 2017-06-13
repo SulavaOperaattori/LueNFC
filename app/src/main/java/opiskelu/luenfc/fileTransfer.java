@@ -2,6 +2,13 @@ package opiskelu.luenfc;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
@@ -22,14 +29,64 @@ class fileTransfer  {
 
     private final String serverURL = "http://193.167.148.46/";
 
-    void downloadFile(final Activity activity, String filename) {
-        DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
-        String file_url = serverURL + "files/" + filename;
+    void downloadFile(final Activity activity, final String filename) {
+        final DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
+        final String file_url = serverURL + "files/" + filename;
         Uri uri = Uri.parse(file_url);
+        Log.e("DOWNLOAD", file_url);
+        final ProgressDialog progress = ProgressDialog.show(
+                activity,
+                activity.getString( R.string.pdf_show_local_progress_title ),
+                activity.getString( R.string.pdf_show_local_progress_content ),
+                true );
+
+
+
+        BroadcastReceiver onComplete = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if ( !progress.isShowing() ) {
+                    return;
+                }
+                context.unregisterReceiver( this );
+
+                progress.dismiss();
+                long downloadId = intent.getLongExtra( DownloadManager.EXTRA_DOWNLOAD_ID, -1 );
+                Cursor c;
+                c = mgr.query( new DownloadManager.Query().setFilterById( downloadId ) );
+
+                if ( c.moveToFirst() ) {
+                    int status = c.getInt( c.getColumnIndex( DownloadManager.COLUMN_STATUS ) );
+                    if ( status == DownloadManager.STATUS_SUCCESSFUL ) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        String type = filename.substring(filename.lastIndexOf(".") + 1);
+                        String local_url = Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS  + "/" + filename;
+                        Log.i("DOWNLOAD", local_url);
+                        if(type.equals("xlsx")) {
+                            i.setDataAndType(Uri.fromFile( new File(local_url)), "application/vnd.ms-excel");
+                        } else if(type.equals("pdf")) {
+                            i.setDataAndType(Uri.fromFile( new File(local_url)), "application/pdf");
+                            i.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        }
+                        Intent i2 = Intent.createChooser(i, "Open file");
+                        try {
+                            context.startActivity(i2);
+                        }
+                        catch (ActivityNotFoundException e) {
+
+                            Toast.makeText(context, "Install a PDF reader to open the PDF", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                c.close();
+            }
+        };
+        activity.registerReceiver( onComplete, new IntentFilter( DownloadManager.ACTION_DOWNLOAD_COMPLETE ) );
         Toast.makeText(activity, "Downloading.", LENGTH_SHORT).show();
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE).setAllowedOverRoaming(false).setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
+
     }
 
     void uploadFile(final Activity activity, String filename) {
