@@ -29,17 +29,33 @@ class fileTransfer  {
 
     private final String serverURL = "http://193.167.148.46/";
 
+    private void isFilePresent(final Activity activity, final String filename) {
 
+        // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy ja jos ei niin uusi ladataan tilalle
+
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
+        if ( file.exists()) {
+            Toast.makeText(activity, "File exists, deleting file...", LENGTH_SHORT).show();
+            if(!file.delete()) {
+                Log.e("FILE", "Couldn't delete file");
+            }
+        }
+        else {
+            Toast.makeText(activity, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
+        }
+    }
     void downloadFile(final Activity activity, final String filename) {
         final DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         final String file_url = serverURL + "files/" + filename;
-
         Uri uri = Uri.parse(file_url);
         Log.e("DOWNLOAD", file_url);
+
+        isFilePresent(activity, filename);
+
         final ProgressDialog progress = ProgressDialog.show(
                 activity,
-                activity.getString( R.string.pdf_show_local_progress_title ),
-                activity.getString( R.string.pdf_show_local_progress_content ),
+                activity.getString( R.string.dl_show_local_progress_title ),
+                activity.getString( R.string.dl_show_local_progress_content ),
                 true );
 
 
@@ -88,11 +104,9 @@ class fileTransfer  {
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE).setAllowedOverRoaming(false).setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
-
-
     }
 
-    void uploadFile(final Activity activity) {
+    void uploadFile(final Activity activity, String filename) {
         String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
@@ -104,7 +118,7 @@ class fileTransfer  {
 
         int maxBufferSize = 1024 * 1024;
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"test.xlsx");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
         try {
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(file);
