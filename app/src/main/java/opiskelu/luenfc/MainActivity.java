@@ -194,6 +194,23 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    public void infoClicked(View view) {
+
+        //Avataan linkki PrinLabin infosivulle
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
+        startActivity(browserIntent);
+
+    }
+
+    public void openManual(View view) {
+        // Suoritetaan funktio, jossa avataan käyttöohje
+
+        if ( ssid_ssid.equals("\"kk\"") ) {
+            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
+
+        }
+    }
+
     @Override
     protected void onStop(){
 
@@ -292,23 +309,6 @@ public class MainActivity extends AppCompatActivity{
         adapter.disableForegroundDispatch(activity);
     }
 
-
-    public void infoClicked(View view) {
-
-        //Avataan linkki PrinLabin infosivulle
-          Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(infoLink));
-            startActivity(browserIntent);
-
-    }
-
-    public void openManual(View view) {
-    // Suoritetaan funktio, jossa avataan käyttöohje
-
-        if ( ssid_ssid.equals("\"kk\"") ) {
-            fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
-
-        }
-    }
 
 
 
