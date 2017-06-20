@@ -165,8 +165,6 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-
-
     public void downloadClicked(View view) {
 
         //Funktio suoritetaan kun käyttäjä painaa "Download"-nappia, ensin tarkistetaan verkko, kun laite on kytketty oikeaan verkkoon, tarkistetaan löytyykö tiedostoa muistista, jos ei löydy niin se ladataan
