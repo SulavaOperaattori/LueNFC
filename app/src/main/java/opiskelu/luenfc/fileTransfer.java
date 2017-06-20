@@ -52,11 +52,7 @@ class fileTransfer  {
 
         isFilePresent(activity, filename);
 
-        final ProgressDialog progress = ProgressDialog.show(
-                activity,
-                activity.getString( R.string.dl_show_local_progress_title ),
-                activity.getString( R.string.dl_show_local_progress_content ),
-                true );
+        final ProgressDialog progress = ProgressDialog.show(activity, activity.getString( R.string.dl_show_local_progress_title ), activity.getString( R.string.dl_show_local_progress_content ), true );
 
 
 

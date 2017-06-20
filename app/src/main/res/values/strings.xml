@@ -2,17 +2,17 @@
     <string name="app_name">PrinLab Automation</string>
     <string name="disabled">NFC is disabled</string>
     <string name="enabled">NFC is enabled</string>
-    <string name="download">download</string>
-    <string name="upload">upload</string>
-    <string name="info">more information</string>
-    <string name="manual">open manual</string>
+    <string name="download">Edit: Excel-file</string>
+    <string name="upload">Upload: Excel-file</string>
+    <string name="info">Device: overview</string>
+    <string name="manual">Open: Device manual</string>
     <string name="WiFiEnabled">WiFi is enabled</string>
     <string name="WiFiDisabled">WiFi is disabled</string>
     <string name="WiFiEnabledConnected">WiFi is enabled and connected to network</string>
     <string name="WiFiEnabledDisconnected">WiFi is enabled but not connected to network</string>
-    <string name="open_wifi_settings">Open Wifi settings</string>
+    <string name="open_wifi_settings">WiFi: settings</string>
     <string name="nfcstatus">GENEERINEN ILMOITUS</string>
     <string name="wifistatus">WiFi verkko</string>
-    <string name="dl_show_local_progress_title">test</string>
-    <string name="dl_show_local_progress_content">test2</string>
+    <string name="dl_show_local_progress_title">Downloading</string>
+    <string name="dl_show_local_progress_content">Excel-file is being downloaded</string>
 </resources>
