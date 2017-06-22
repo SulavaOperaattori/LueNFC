@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity{
 
     //private static final String MIME_TEXT_PLAIN = "text/plain";
     private static final String TAG = "NfcDemo";
+    final String serverURL = "http://193.167.151.5/";
+
 
     private NfcAdapter mNfcAdapter;
     private TextView WiFiStateTextView;
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity{
         uploadButton = (Button) findViewById(R.id.upload);
         downloadButton = (Button) findViewById(R.id.download);
         openManualButton = (Button) findViewById(R.id.manual);
-        fileTransferObject = new fileTransfer();
+        fileTransferObject = new fileTransfer(serverURL);
 
         // WiFi.setOnClickListener luo uuden funktion, joka suoritetaan kun WiFi-nappia painetaan
 
@@ -365,22 +367,19 @@ public class MainActivity extends AppCompatActivity{
 
 
                 //infoLink = link + results.elementAt(1);
-
+/*
                 ConnectivityManager cm = (ConnectivityManager)MainActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
                 if( activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
                     informationButton.setEnabled(true);
                 }
-
+*/
                 if ( checkWifiConnection() ) {
                     if (ssid_ssid.equals("\"kk\"")) {
 
                         Log.i("NFC", "sql haku");
                         new SigningActivity().execute(results.elementAt(0));
 
-                        uploadButton.setEnabled(true);
-                        downloadButton.setEnabled(true);
-                        openManualButton.setEnabled(true);
                     }
                 }
             }
@@ -401,36 +400,62 @@ public class MainActivity extends AppCompatActivity{
             // infoLink sisältää PrinLab:n verkko-osoitteen ja laitteen nimi lisätään perään
 
             try {
-                final String serverURL = "http://193.167.148.46/";
+
                 String sqlLink = serverURL + "sqlandroidup.php";
                 String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(arg0[0], "UTF-8");
                 HttpHandler sh = new HttpHandler();
+
                 String response = sh.makeServiceCall(sqlLink, data);
 
-                JSONObject jObj = new JSONObject(response);
-                boolean error = jObj.getBoolean("error");
+                if (response != null) {
+                    JSONObject jObj = new JSONObject(response);
+                    boolean error = jObj.getBoolean("error");
 
-                // Check for error node in json
-                if (!error) {
-                    JSONObject device = jObj.getJSONObject("device");
-                    //String id = jObj.getString("id");
-                    final String name = "Device name: " + device.getString("name");
-                    Log.i("JSON", name);
+                    // Check for error node in json
+                    if (!error) {
+                        JSONObject device = jObj.getJSONObject("device");
+                        //String id = jObj.getString("id");
+                        final String name = "Device name: " + device.getString("name");
+                        Log.i("JSON", name);
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                mTextView.setText(name);
+                            }
+                        });
+
+
+                        deviceName = device.getString("url");
+                        infoLink = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=" + deviceName;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                informationButton.setEnabled(true);
+                                uploadButton.setEnabled(true);
+                                downloadButton.setEnabled(true);
+                                openManualButton.setEnabled(true);
+
+                            }
+                        });
+
+
+                    } else {
+
+                        // Error in login. Get the error message
+                        String errorMsg = jObj.getString("error_msg");
+                        Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    }
+                } else {
                     runOnUiThread(new Runnable() {
+                        @Override
                         public void run() {
-                            mTextView.setText(name);
+                            informationButton.setEnabled(false);
+                            uploadButton.setEnabled(false);
+                            downloadButton.setEnabled(false);
+                            openManualButton.setEnabled(false);
+
                         }
                     });
 
-
-                    deviceName = device.getString("url");
-                    infoLink = "http://www.oamk.fi/hankkeet/prinlab/equipment/index.php?page=" + deviceName;
-
-                } else {
-
-                    // Error in login. Get the error message
-                    String errorMsg = jObj.getString("error_msg");
-                    Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -462,6 +487,7 @@ public class MainActivity extends AppCompatActivity{
             uploadButton.setEnabled(false);
             openManualButton.setEnabled(false);
             informationButton.setEnabled(false);
+            mTextView.setText(R.string.device_not_available);
         }
     }
 }
