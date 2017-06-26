@@ -27,7 +27,11 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 class fileTransfer  {
 
-    private final String serverURL = "http://193.167.148.46/";
+    private final String serverURL;
+
+    fileTransfer(final String url) {
+        serverURL = url;
+    }
 
     private void isFilePresent(final Activity activity, final String filename) {
 

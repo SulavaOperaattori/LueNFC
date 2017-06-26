@@ -15,4 +15,5 @@
     <string name="wifistatus">WiFi verkko</string>
     <string name="dl_show_local_progress_title">Downloading</string>
     <string name="dl_show_local_progress_content">Excel-file is being downloaded</string>
+    <string name="device_not_available">Device name: -</string>
 </resources>
