@@ -35,7 +35,7 @@ class fileTransfer  {
 
     private void isFilePresent(final Activity activity, final String filename) {
 
-        // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy ja jos ei niin uusi ladataan tilalle
+        // Tarkistaa löytyykö tiettyä tiedostoa muistista, tiedosto poistetaan jos sellainen löytyy.
 
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
         if ( file.exists()) {
@@ -48,6 +48,8 @@ class fileTransfer  {
             Toast.makeText(activity, "File doesn't exist, downloaded file will be saved", LENGTH_SHORT).show();
         }
     }
+
+    // Lataa halutun tiedoston käyttäen Androidin DownloadManager:ia
     void downloadFile(final Activity activity, final String filename) {
         final DownloadManager mgr = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         final String file_url = serverURL + "files/" + filename;
@@ -72,14 +74,16 @@ class fileTransfer  {
                 long downloadId = intent.getLongExtra( DownloadManager.EXTRA_DOWNLOAD_ID, -1 );
                 Cursor c;
                 c = mgr.query( new DownloadManager.Query().setFilterById( downloadId ) );
-
+                // haetaan miimeisin lataus
                 if ( c.moveToFirst() ) {
                     int status = c.getInt( c.getColumnIndex( DownloadManager.COLUMN_STATUS ) );
+                    // tarkistetaan jos jos lataus onnistui
                     if ( status == DownloadManager.STATUS_SUCCESSFUL ) {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         String type = filename.substring(filename.lastIndexOf(".") + 1);
                         String local_url = Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS  + "/" + filename;
                         Log.i("DOWNLOAD", local_url);
+                        // selvitetään ladattavan tiedoston tyyppi
                         if(type.equals("xlsx")) {
                             i.setDataAndType(Uri.fromFile( new File(local_url)), "application/vnd.ms-excel");
                         } else if(type.equals("pdf")) {
@@ -87,6 +91,7 @@ class fileTransfer  {
                             i.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                         }
                         Intent i2 = Intent.createChooser(i, "Open file");
+                        // yritetään avata tiedosto
                         try {
                             context.startActivity(i2);
                         }
@@ -99,14 +104,19 @@ class fileTransfer  {
                 c.close();
             }
         };
+
+
         activity.registerReceiver( onComplete, new IntentFilter( DownloadManager.ACTION_DOWNLOAD_COMPLETE ) );
         Toast.makeText(activity, "Downloading.", LENGTH_SHORT).show();
+
+        // aloitetaan lataus
         mgr.enqueue(new DownloadManager.Request(uri).setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE).setAllowedOverRoaming(false).setTitle("PrinLab")
                 .setDescription("Excel-file")
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename));
     }
 
     void uploadFile(final Activity activity, String filename) {
+        // käytetään palvelimelta löytyvää upload.php:ta tiedoston latauksessa.
         String upLoadServerUri = serverURL + "upload.php";
         HttpURLConnection conn;
         DataOutputStream dos;
@@ -117,6 +127,7 @@ class fileTransfer  {
         byte[] buffer;
 
         int maxBufferSize = 1024 * 1024;
+
 
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),filename);
         try {
@@ -144,6 +155,7 @@ class fileTransfer  {
             // read file and write it into form...
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 
+            // lähetetään tiedosto
             while (bytesRead > 0) {
                 dos.write(buffer, 0, bufferSize);
                 bytesAvailable = fileInputStream.available();
