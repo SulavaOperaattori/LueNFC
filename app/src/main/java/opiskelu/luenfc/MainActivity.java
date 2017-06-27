@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -174,6 +173,8 @@ public class MainActivity extends AppCompatActivity{
         if ( ssid_ssid.equals("\"kk\"") ) {
             fileTransferObject.downloadFile(MainActivity.this, deviceName + ".xlsx");
 
+        } else {
+            Toast.makeText(MainActivity.this, "Connect to kk before downloading", LENGTH_SHORT).show();
         }
     }
 
@@ -188,8 +189,7 @@ public class MainActivity extends AppCompatActivity{
                     fileTransferObject.uploadFile(MainActivity.this, deviceName + ".xlsx");
                 }
             }).start();
-        }
-        else {
+        } else {
             Toast.makeText(MainActivity.this, "Connect to kk before uploading", LENGTH_SHORT).show();
         }
     }
@@ -203,12 +203,16 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void openManual(View view) {
-        // Suoritetaan funktio, jossa avataan käyttöohje
+        // Suoritetaan funktio, jossa ladataan ja avataan käyttöohje
 
         if ( ssid_ssid.equals("\"kk\"") ) {
+
             fileTransferObject.downloadFile(MainActivity.this, deviceName + ".pdf");
 
+        } else {
+            Toast.makeText(MainActivity.this, "Connect to kk before downloading", LENGTH_SHORT).show();
         }
+
     }
 
     @Override
@@ -256,8 +260,11 @@ public class MainActivity extends AppCompatActivity{
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
             String type = intent.getScheme();
             //String type = intent.getType();
+            // jos kyseisissä nfc tarrassa on URL ensimmäisenä tallenteena.
             if (type.equals("http")) {
+
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                // luetaan tarra
                 new NdefReaderTask().execute(tag);
             }
 
@@ -284,6 +291,8 @@ public class MainActivity extends AppCompatActivity{
      * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
      */
     private void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
+
+        // ohjelma on kiinnostunut vain sellaisista nfc tarroista joitten alussa on URL
         final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         final PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, 0);
@@ -330,8 +339,10 @@ public class MainActivity extends AppCompatActivity{
             NdefMessage ndefMessage = ndef.getCachedNdefMessage();
             NdefRecord[] records = ndefMessage.getRecords();
 
+            // luetaan nfc data tallenteet
             for (NdefRecord ndefRecord : records) {
 
+                // luetaan ainoastaan tekti tallenteet.
                 if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT  )) {
 
                     try {
@@ -475,6 +486,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // WiFi:n tila muuttunut
     private class MyReceiver extends BroadcastReceiver {
 
         private MyReceiver() {
@@ -483,6 +495,8 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public void onReceive(Context context, Intent intent) {
             checkWifiConnection();
+
+            // resetoidaan käyttöliittymä
             downloadButton.setEnabled(false);
             uploadButton.setEnabled(false);
             openManualButton.setEnabled(false);
